@@ -6,24 +6,23 @@
 const int logWidth = 600;
 struct LogData
 {
-	LogData(String s, int i)
-	{
-		str = s;
-		icon = i;
-	}
+	LogData(String s, int i):
+		str(s),
+		icon(i)
+	{}
 
 	String str = L"There is not data.";
 	int icon;
 };
 struct IconData
 {
-	IconData(FilePath path, String word, Color c)
-	{
-		img = Texture(path);
-		keyword = word;
-		size = img.size;
-		color = c;
-	}
+	IconData(FilePath path, String word, Color c):
+		img(Texture(path)),
+		keyword(word),
+		size(img.size),
+		color(c)
+	{}
+
 	Texture img;
 	Size size;
 	String keyword;
@@ -40,7 +39,7 @@ public:
 
 	void displayLog();
 	void addLog(String);
-	void setOrigin(Point);
+	void setOrigin(Point p) { origin = p; }
 protected:
 	LogSystem();
 	virtual ~LogSystem() {}
@@ -98,10 +97,6 @@ void LogSystem::addLog(String str)
 	if ((int)log.size() > maxLogSize)
 		log.pop_back();
 }
-void LogSystem::setOrigin(Point p)
-{
-	origin = p;
-}
 LogSystem::LogSystem() :
 	font(20),
 	maxLogSize(20),
@@ -109,11 +104,9 @@ LogSystem::LogSystem() :
 {
 	for (int i = 1; i <= 5; i++)
 		icon.emplace_back(Format(L"Images/icon_nadeshiko_{}.png"_fmt, i), Format(L"<nade{}>"_fmt, i), Palette::Pink);
-	//icon.push_back(icondata(L"Images/icon_nadeshiko_" + ToString(i) + L".png", L"<nade" + ToString(i) + L">", Palette::Pink));
 
 	for (int i = 1; i <= 5; i++)
 		icon.emplace_back(Format(L"Images/icon_shimarin_{}.png"_fmt, i), Format(L"<shima{}>"_fmt, i), Palette::Royalblue);
-	//icon.push_back(icondata(L"Images/icon_shimarin_" + ToString(i) + L".png", L"<shima" + ToString(i) + L">", Palette::Royalblue));
 
 	const int iconHeight = 50;
 	for (size_t i = 0; i < icon.size(); i++)
@@ -124,7 +117,7 @@ LogSystem::LogSystem() :
 }
 
 //マップグリッドとXY座標の相互変換
-const Size gridSize = Size::One * 80;
+const Size gridSize = Size::One * 60;
 Point GridtoXY(Point);
 Point GridtoCenterXY(Point);
 Point XYtoGrid(Vec2);
@@ -216,8 +209,14 @@ public:
 	void loadMap();
 	void setCenterPoint(Point p) { centerGrid = p; }
 	Grid<GridData>& getAllGridData() { return mapGrid; }
-	GridData& getOneGridData(int x, int y) { return mapGrid[x][y]; }
-	GridData& getOneGridData(Point p) { return mapGrid[p.x][p.y]; }
+	GridData& getOneGridData(int x, int y) 
+	{
+		if ((x < 0 || x >= mapGrid.height) || (y < 0 || y >= mapGrid.width))
+			return defaultGridData;
+		else
+			return mapGrid[x][y];
+	}
+	GridData& getOneGridData(Point p) { return getOneGridData(p.x, p.y); }
 	Point getCenterPoint() { return centerGrid; }
 
 	void setAllGridEnableDraw(Size range)
@@ -229,19 +228,6 @@ public:
 				mapGrid[x][y].setEnableDraw(false);
 			}
 		}
-
-		const Point startingPos = MapData::getInstance().getCenterPoint() - range / 2;
-		const Point endPos = startingPos + range;
-
-		for (int y = startingPos.y; y < endPos.y; y++)
-		{
-			for (int x = startingPos.x; x < endPos.x; x++)
-			{
-				if ((x < 0 || x >(int)MapData::getInstance().getAllGridData().height - 1) || (y < 0 || y >(int)MapData::getInstance().getAllGridData().width - 1))
-					continue;
-				mapGrid[x][y].setEnableDraw(true);
-			}
-		}
 	}
 
 protected:
@@ -249,10 +235,12 @@ protected:
 	virtual ~MapData() {}
 private:
 	Grid<GridData> mapGrid;
+	GridData defaultGridData;
 	Point centerGrid;
 };
 MapData::MapData()
 {
+	defaultGridData = GridData();
 	centerGrid = Point(0, 0);
 }
 void MapData::loadMap()
@@ -286,7 +274,6 @@ public:
 	void draw(Size);
 	bool move();
 	void act();
-	//void move() {};
 
 	void setPos(Point p) { position = GridtoCenterXY(p); }
 	void setRad(int d) { direction = d; }
@@ -489,8 +476,7 @@ void Main()
 
 	while (System::Update())
 	{
-		if (player.move())
-			enemy.move();
+		player.move();
 
 		if (Input::MouseL.clicked)
 			MapData::getInstance().setCenterPoint(XYtoGrid(Mouse::Pos())
@@ -541,24 +527,18 @@ void drawGroundImage(Size range)
 	{
 		for (int x = startingPos.x; x < endPos.x; x++)
 		{
-			if ((x < 0 || x >(int)MapData::getInstance().getAllGridData().height - 1) || (y < 0 || y >(int)MapData::getInstance().getAllGridData().width - 1))
-			{
-				drawOneGrid(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, -1);
-			}
-			else
-			{
-				int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
-				drawOneGrid(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
+			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
+			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
+			drawOneGrid(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
 
-				if (MapData::getInstance().getOneGridData(x, y).CharaOn())
-					k = 10;
-				if (MapData::getInstance().getOneGridData(x, y).ItemOn())
-					k = 20;
-				if (MapData::getInstance().getOneGridData(x, y).CharaOn() && MapData::getInstance().getOneGridData(x, y).ItemOn())
-					k = 30;
-				drawOneGrid(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
-			}
+			if (MapData::getInstance().getOneGridData(x, y).CharaOn())
+				k = 10;
+			if (MapData::getInstance().getOneGridData(x, y).ItemOn())
+				k = 20;
+			if (MapData::getInstance().getOneGridData(x, y).CharaOn() && MapData::getInstance().getOneGridData(x, y).ItemOn())
+				k = 30;
 
+			drawOneGrid(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
 		}
 	}
 
@@ -598,7 +578,6 @@ void drawOneGrid(Point p, Size s, int k)
 	case 30:
 		Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 150)).drawFrame(1, 0, Palette::Black);
 		break;
-
 
 	default:
 		Rect(p, s).draw(Palette::Dimgray).drawFrame(1, 0, Palette::Black);
