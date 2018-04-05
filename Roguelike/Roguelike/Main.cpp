@@ -131,7 +131,7 @@ public:
 	Character(int, int);
 	void draw();
 
-	virtual bool move() = 0;
+	bool move() {};
 	bool attack() {};
 
 	void setPos(Point p) { position = GridtoCenterXY(p); }
@@ -349,7 +349,7 @@ void Character::draw()
 		return;
 
 	const Point drawPosition = GridtoXY(XYtoGrid(position) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
-	
+
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Point(gridSize.x / 2 * cos(Radians(direction)), gridSize.x / 2 * sin(Radians(direction))), 6).draw(Palette::Black);
 	Rect(drawPosition, gridSize)(img).draw().drawFrame(1, 1, color);
 	
@@ -364,8 +364,7 @@ class Player :public Character
 public:
 	Player(Point pos) :Character(pos)
 	{
-		img = Texture((L"Images/image.png"));
-		img.resize(gridSize);
+		img = Texture(L"Images/image.png");
 		color = Palette::Dodgerblue;
 		name = L"Player";
 		MapData::getInstance().setCenterPoint(XYtoGrid(position));
@@ -439,13 +438,12 @@ bool Player::attack()
 	return true;
 }
 
-//エネミー
+//エネミー+
 class Enemy :public Character
 {
 public:
 	Enemy(Point pos) :Character(pos)
 	{
-		img.resize(gridSize);
 		color = Palette::Tomato;
 		name = L"Enemy";
 	
@@ -550,21 +548,22 @@ void Main()
 	FontAsset::Register(L"statusFont", 18, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
-	Player player(5, 5);
-	Sandbag sandbag(4, 3);
-	Glasses glasses(5, 4);
+	Array<Character> characters;
+	characters.emplace_back(Player(5, 5));
+	characters.emplace_back(Sandbag(4, 3));
+	//Glasses glasses(5, 4);
 
 	while (System::Update())
 	{
-		player.move();
+		//player.move();
 
-		player.attack();
-
-		if (Input::MouseL.clicked)
-			MapData::getInstance().getCharacterPointer(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2)->move();
+		//player.attack();
 
 		MapData::getInstance().setAllGridEnableDraw();
 		drawImage();
+
+		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
+			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 
 		LogSystem::getInstance().displayLog();
 	}
@@ -609,14 +608,14 @@ void drawImage()
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
 			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
 
-			//if (MapData::getInstance().getOneGridData(x, y)->CharaOn())
-			//	k = 10;
-			//if (MapData::getInstance().getOneGridData(x, y)->ItemOn())
-			//	k = 20;
-			//if (MapData::getInstance().getOneGridData(x, y)->CharaOn() && MapData::getInstance().getOneGridData(x, y)->ItemOn())
-			//	k = 30;
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
+				k = 10;
+			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
+				k = 20;
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && MapData::getInstance().getOneGridData(x, y).isUnderItem())
+				k = 30;
 
-			//drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
+			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
 		}
 	}
 
@@ -627,7 +626,7 @@ void drawImage()
 			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				MapData::getInstance().getItemPointer(x, y)->draw();
 
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && Input::Key3.clicked)
 				MapData::getInstance().getCharacterPointer(x, y)->draw();
 		}
 	}
@@ -643,15 +642,15 @@ void drawOneGridGround(Point p, Size s, int k)
 		Rect(p, s).draw(Palette::Sandybrown).drawFrame(1, 0, Palette::Sienna);
 		break;
 
-	//case 10:
-	//	Rect(p, s).draw(Color(Palette::Aqua.r, Palette::Aqua.g, Palette::Aqua.b, 150)).drawFrame(1, 0, Palette::Black);
-	//	break;
-	//case 20:
-	//	Rect(p, s).draw(Color(Palette::Tomato.r, Palette::Tomato.g, Palette::Tomato.b, 150)).drawFrame(1, 0, Palette::Black);
-	//	break;
-	//case 30:
-	//	Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 150)).drawFrame(1, 0, Palette::Black);
-	//	break;
+	case 10:
+		Rect(p, s).draw(Color(Palette::Aqua.r, Palette::Aqua.g, Palette::Aqua.b, 150)).drawFrame(1, 0, Palette::Black);
+		break;
+	case 20:
+		Rect(p, s).draw(Color(Palette::Tomato.r, Palette::Tomato.g, Palette::Tomato.b, 150)).drawFrame(1, 0, Palette::Black);
+		break;
+	case 30:
+		Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 150)).drawFrame(1, 0, Palette::Black);
+		break;
 
 	default:
 		Rect(p, s).draw(Palette::Dimgray).drawFrame(1, 0, Palette::Black);
