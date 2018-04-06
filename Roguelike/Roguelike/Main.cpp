@@ -6,12 +6,12 @@
 const int logWidth = 500;
 struct LogData
 {
-	LogData(String s, int i):
+	LogData(String s = L"There is not data.", int i = -1):
 		str(s),
 		icon(i)
 	{}
 
-	String str = L"There is not data.";
+	String str;
 	int icon;
 };
 struct IconData
@@ -347,7 +347,7 @@ void Character::draw()
 {
 	if (!MapData::getInstance().getOneGridData(XYtoGrid(position)).canBeDraw())
 		return;
-
+	
 	const Point drawPosition = GridtoXY(XYtoGrid(position) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
 
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Point(gridSize.x / 2 * cos(Radians(direction)), gridSize.x / 2 * sin(Radians(direction))), 6).draw(Palette::Black);
@@ -367,7 +367,6 @@ public:
 		img = Texture(L"Images/image.png");
 		color = Palette::Dodgerblue;
 		name = L"Player";
-		MapData::getInstance().getOneGridData(XYtoGrid(position)).setCharacterP(this);
 		MapData::getInstance().setCenterPoint(XYtoGrid(position));
 
 		HP = 100;
@@ -566,6 +565,8 @@ void Main()
 		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
 			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 
+		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
+			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 		LogSystem::getInstance().displayLog();
 	}
 }
@@ -627,10 +628,13 @@ void drawImage()
 			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				MapData::getInstance().getItemPointer(x, y)->draw();
 
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && Input::Key3.clicked)
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter()&&Input::Key3.clicked)
 				MapData::getInstance().getCharacterPointer(x, y)->draw();
 		}
 	}
+
+	if (Input::Key0.clicked)
+		ClearPrint();
 }
 void drawOneGridGround(Point p, Size s, int k)
 {
