@@ -6,7 +6,7 @@
 const int logWidth = 500;
 struct LogData
 {
-	LogData(String s = L"There is not data.", int i = -1) :
+	LogData(String s = L"There is not data.", int i = -1):
 		str(s),
 		icon(i)
 	{}
@@ -16,7 +16,7 @@ struct LogData
 };
 struct IconData
 {
-	IconData(FilePath path, String word, Color c) :
+	IconData(FilePath path, String word, Color c):
 		img(Texture(path)),
 		keyword(word),
 		size(img.size),
@@ -233,7 +233,7 @@ public:
 	void setCenterPoint(Point p) { centerGrid = p; }
 
 	Grid<GridData>& getAllGridData() { return mapGrid; }
-	GridData& getOneGridData(int x, int y)
+	GridData& getOneGridData(int x, int y) 
 	{
 		if ((x < 0 || x >= (int)mapGrid.height) || (y < 0 || y >= (int)mapGrid.width))
 			return outsideGrid;
@@ -347,12 +347,12 @@ void Character::draw()
 {
 	if (!MapData::getInstance().getOneGridData(XYtoGrid(position)).canBeDraw())
 		return;
-
+	
 	const Point drawPosition = GridtoXY(XYtoGrid(position) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
 
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Point(gridSize.x / 2 * cos(Radians(direction)), gridSize.x / 2 * sin(Radians(direction))), 6).draw(Palette::Black);
 	Rect(drawPosition, gridSize)(img).draw().drawFrame(1, 1, color);
-
+	
 	FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, gridSize.y / 3 * 0), Palette::Black);
 	FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
 	FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
@@ -430,7 +430,7 @@ bool Player::attack()
 	const Point frontOfMe = XYtoGrid(position) + Point(cos(Radians(direction)), sin(Radians(direction)));
 
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
-	{
+	{ 
 		const int damage = ATK - MapData::getInstance().getCharacterPointer(frontOfMe)->getDEF();
 		MapData::getInstance().getCharacterPointer(frontOfMe)->causeDamage(damage);
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getCharacterPointer(frontOfMe)->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
@@ -446,7 +446,7 @@ public:
 	{
 		color = Palette::Tomato;
 		name = L"Enemy";
-
+	
 		HP = 100;
 		ATK = 10;
 		DEF = 70;
@@ -628,7 +628,7 @@ void drawImage()
 			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				MapData::getInstance().getItemPointer(x, y)->draw();
 
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && Input::Key3.clicked)
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter()&&Input::Key3.clicked)
 				MapData::getInstance().getCharacterPointer(x, y)->draw();
 		}
 	}
