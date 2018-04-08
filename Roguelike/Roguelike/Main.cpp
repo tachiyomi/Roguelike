@@ -6,17 +6,17 @@
 const int logWidth = 500;
 struct LogData
 {
-	LogData(String s, int i):
+	LogData(String s = L"There is not data.", int i = -1) :
 		str(s),
 		icon(i)
 	{}
 
-	String str = L"There is not data.";
+	String str;
 	int icon;
 };
 struct IconData
 {
-	IconData(FilePath path, String word, Color c):
+	IconData(FilePath path, String word, Color c) :
 		img(Texture(path)),
 		keyword(word),
 		size(img.size),
@@ -233,7 +233,7 @@ public:
 	void setCenterPoint(Point p) { centerGrid = p; }
 
 	Grid<GridData>& getAllGridData() { return mapGrid; }
-	GridData& getOneGridData(int x, int y) 
+	GridData& getOneGridData(int x, int y)
 	{
 		if ((x < 0 || x >= (int)mapGrid.height) || (y < 0 || y >= (int)mapGrid.width))
 			return outsideGrid;
@@ -352,7 +352,7 @@ void Character::draw()
 
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Point(gridSize.x / 2 * cos(Radians(direction)), gridSize.x / 2 * sin(Radians(direction))), 6).draw(Palette::Black);
 	Rect(drawPosition, gridSize)(img).draw().drawFrame(1, 1, color);
-	
+
 	FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, gridSize.y / 3 * 0), Palette::Black);
 	FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
 	FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
@@ -430,7 +430,7 @@ bool Player::attack()
 	const Point frontOfMe = XYtoGrid(position) + Point(cos(Radians(direction)), sin(Radians(direction)));
 
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
-	{ 
+	{
 		const int damage = ATK - MapData::getInstance().getCharacterPointer(frontOfMe)->getDEF();
 		MapData::getInstance().getCharacterPointer(frontOfMe)->causeDamage(damage);
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getCharacterPointer(frontOfMe)->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
@@ -438,7 +438,7 @@ bool Player::attack()
 	return true;
 }
 
-//エネミー+
+//エネミー
 class Enemy :public Character
 {
 public:
@@ -446,7 +446,7 @@ public:
 	{
 		color = Palette::Tomato;
 		name = L"Enemy";
-	
+
 		HP = 100;
 		ATK = 10;
 		DEF = 70;
@@ -565,6 +565,8 @@ void Main()
 		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
 			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 
+		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
+			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 		LogSystem::getInstance().displayLog();
 	}
 }
@@ -630,6 +632,9 @@ void drawImage()
 				MapData::getInstance().getCharacterPointer(x, y)->draw();
 		}
 	}
+
+	if (Input::Key0.clicked)
+		ClearPrint();
 }
 void drawOneGridGround(Point p, Size s, int k)
 {
