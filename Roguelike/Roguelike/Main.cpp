@@ -1,9 +1,9 @@
 ﻿#include <Siv3D.hpp>
 #include <memory>
 #include <deque>
+#include <typeinfo>
 
 //ログの設定
-const int logWidth = 500;
 struct LogData
 {
 	LogData(String s = L"There is not data.", int i = -1):
@@ -40,6 +40,8 @@ public:
 	void displayLog();
 	void addLog(String);
 	void setOrigin(Point p) { origin = p; }
+
+	int logWidth = 500;
 protected:
 	LogSystem();
 	virtual ~LogSystem() {}
@@ -115,7 +117,6 @@ LogSystem::LogSystem() :
 }
 
 //マップグリッドとXY座標の相互変換
-const Size gridSize = Size::One * 100;
 Point GridtoXY(Point);
 Point GridtoCenterXY(Point);
 Point XYtoGrid(Vec2);
@@ -129,10 +130,9 @@ class Character
 public:
 	Character(Point);
 	Character(int, int);
-	void draw();
-
-	bool move() { return true; }
-	bool attack() { return true; }
+	virtual void draw();
+	virtual bool move();
+	virtual bool attack();
 
 	void setPos(Point p) { position = GridtoCenterXY(p); }
 	void setRad(int d) { direction = d; }
@@ -158,6 +158,15 @@ protected:
 
 	int HP, ATK, DEF;
 };
+class Player :public Character
+{
+public:
+	Player(Point pos);
+	Player(int x, int y) :Player(Point(x, y)) {}
+
+	bool move()override;
+	bool attack()override;
+};
 
 //アイテム
 class Item
@@ -165,7 +174,9 @@ class Item
 public:
 	Item(Point);
 	Item(int, int);
-	void draw();
+	virtual void draw();
+	void setPos(Point p) { position = GridtoCenterXY(p); }
+	Point getPos() { return XYtoGrid(position); }
 	String getName() { return name; }
 protected:
 	Texture img;
@@ -228,8 +239,13 @@ public:
 		static MapData Instance;
 		return Instance;
 	}
+	void update();
+	void drawImage();
 
 	void loadMap();
+	void drawOneGridGround(Point, Size, int);
+	void registerCharacter(std::unique_ptr<Character> c) { characters.emplace_back(std::move(c)); }
+	void registerItem(std::unique_ptr<Item> i) { items.emplace_back(std::move(i)); }
 	void setCenterPoint(Point p) { centerGrid = p; }
 
 	Grid<GridData>& getAllGridData() { return mapGrid; }
@@ -298,11 +314,7 @@ public:
 		}
 	}
 
-	void registerCharacter()
-	{
-
-	}
-
+	Size gridSize = Size::One * 80;
 protected:
 	MapData();
 	virtual ~MapData() {}
@@ -311,13 +323,18 @@ private:
 	GridData outsideGrid;
 	Point centerGrid;
 	Size drawRange;
-	Array<Character> characters;
+	Array<std::unique_ptr<Character>> characters;
+	Array<std::unique_ptr<Item>> items;
+
+	Stopwatch updateTimer;
 };
 MapData::MapData()
 {
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
 	drawRange = Size(7, 7);
+
+	updateTimer.start();
 }
 void MapData::loadMap()
 {
@@ -340,13 +357,93 @@ void MapData::loadMap()
 	}
 	LogSystem::getInstance().addLog(L"Map has been loaded.");
 }
+void MapData::update()
+{
+	for (auto& e : characters)
+	{
+		if (typeid(*e) == typeid(Player))
+			e->move();
+		else if (updateTimer.s() > 3)
+			e->move();
+	}
+	if (updateTimer.s() <= 3)
+		return;
+	updateTimer.restart();
+}
+void MapData::drawImage()
+{
+	setAllGridEnableDraw();
+	const Size range = MapData::getInstance().getDrawRange();
+	const Point startingPos = MapData::getInstance().getCenterPoint() - range / 2;
+	const Point endPos = startingPos + range;
+
+	for (int y = startingPos.y; y < endPos.y; y++)
+	{
+		for (int x = startingPos.x; x < endPos.x; x++)
+		{
+			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
+			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
+			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
+
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && MapData::getInstance().getOneGridData(x, y).isUnderItem())
+				k = 30;
+			else if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
+				k = 10;
+			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
+				k = 20;
+			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
+		}
+	}
+
+	for (size_t i = 0; i < items.size(); i++)
+	{
+		if (MapData::getInstance().getOneGridData(items[i]->getPos()).canBeDraw())
+			items[i]->draw();
+	}
+	for (size_t i = 0; i < characters.size(); i++)
+	{
+		if (MapData::getInstance().getOneGridData(characters[i]->getPos()).canBeDraw())
+			characters[i]->draw();
+	}
+
+	if (Input::Key0.clicked)
+		ClearPrint();
+}
+void MapData::drawOneGridGround(Point p, Size s, int k)
+{
+	switch (k)
+	{
+	case 0:
+		Rect(p, s).draw(Palette::Darkgray).drawFrame(1, 0, Palette::Black);
+		break;
+	case 1:
+		Rect(p, s).draw(Palette::Sandybrown).drawFrame(1, 0, Palette::Sienna);
+		break;
+
+	case 10:
+		Rect(p, s).draw(Color(Palette::Aqua.r, Palette::Aqua.g, Palette::Aqua.b, 150)).drawFrame(1, 0, Palette::Black);
+		break;
+	case 20:
+		Rect(p, s).draw(Color(Palette::Tomato.r, Palette::Tomato.g, Palette::Tomato.b, 150)).drawFrame(1, 0, Palette::Black);
+		break;
+	case 30:
+		Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 150)).drawFrame(1, 0, Palette::Black);
+		break;
+
+	default:
+		Rect(p, s).draw(Palette::Dimgray).drawFrame(1, 0, Palette::Black);
+		break;
+	}
+
+}
+
 
 //キャラクター
 Character::Character(Point pos)
 {
 	position = GridtoCenterXY(pos);
 	direction = 0;
-	MapData::getInstance().getOneGridData(XYtoGrid(position)).setCharacterPointer(this);
+	//MapData::getInstance().getOneGridData(XYtoGrid(position)).setCharacterPointer(this);
 }
 Character::Character(int x, int y) :Character(Point(x, y)) {}
 void Character::draw()
@@ -356,34 +453,34 @@ void Character::draw()
 	
 	const Point drawPosition = GridtoXY(XYtoGrid(position) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
 
-	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Point(gridSize.x / 2 * cos(Radians(direction)), gridSize.x / 2 * sin(Radians(direction))), 6).draw(Palette::Black);
-	Rect(drawPosition, gridSize)(img).draw().drawFrame(1, 1, color);
+	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Point(MapData::getInstance().gridSize.x / 2 * cos(Radians(direction)), MapData::getInstance().gridSize.x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
+	Rect(drawPosition, MapData::getInstance().gridSize)(img).draw().drawFrame(1, 1, color);
 	
-	FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, gridSize.y / 3 * 0), Palette::Black);
-	FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
-	FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
+	//FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, gridSize.y / 3 * 0), Palette::Black);
+	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
+	//FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
+}
+bool Character::move()
+{
+	return false;
+}
+bool Character::attack()
+{
+	return false;
 }
 
 //プレイヤー
-class Player :public Character
+Player::Player(Point pos) :Character(pos)
 {
-public:
-	Player(Point pos) :Character(pos)
-	{
-		img = Texture(L"Images/image.png");
-		color = Palette::Dodgerblue;
-		name = L"Player";
-		MapData::getInstance().setCenterPoint(XYtoGrid(position));
+	img = Texture(L"Images/image.png");
+	color = Palette::Dodgerblue;
+	name = L"Player";
+	MapData::getInstance().setCenterPoint(XYtoGrid(position));
 
-		HP = 100;
-		ATK = 80;
-		DEF = 60;
-	}
-	Player(int x, int y) :Player(Point(x, y)) {}
-
-	bool move();
-	bool attack();
-};
+	HP = 100;
+	ATK = 80;
+	DEF = 60;
+}
 bool Player::move()
 {
 	Point grid = XYtoGrid(position);
@@ -418,8 +515,8 @@ bool Player::move()
 
 	if (grid != formerGrid || direction != formerDirection)
 	{
-		MapData::getInstance().getOneGridData(formerGrid).deleteCharacterPointer();
-		MapData::getInstance().getOneGridData(grid).setCharacterPointer(this);
+		//MapData::getInstance().getOneGridData(formerGrid).deleteCharacterPointer();
+		//MapData::getInstance().getOneGridData(grid).setCharacterPointer(this);
 
 		if (MapData::getInstance().getOneGridData(grid).getItemP())
 			LogSystem::getInstance().addLog(MapData::getInstance().getItemPointer(grid)->getName() + L"を踏んでしまった。");
@@ -459,45 +556,30 @@ public:
 	}
 	Enemy(int x, int y) :Enemy(Point(x, y)) {}
 
-	bool move();
+	bool move()override;
 };
 bool Enemy::move()
 {
-	bool moved = false;
-
-	Grid<GridData> mapgrid = MapData::getInstance().getAllGridData();
-
 	Point grid = XYtoGrid(position);
 	const Point formerGrid = grid;
+	const int formerDirection = direction;
 
-	if (mapgrid[grid.x + 1][grid.y].canBeInvade() && mapgrid[grid.x - 1][grid.y].canBeInvade())
-	{
-		if (Random() < 0.5)
-		{
-			grid.x += 1;
-			direction = 0;
-		}
-		else
-		{
-			grid.x -= 1;
-			direction = 180;
-		}
-	}
-	else if (mapgrid[grid.x + 1][grid.y].canBeInvade())
-		grid.x += 1;
-	else if (mapgrid[grid.x - 1][grid.y].canBeInvade())
-		grid.x -= 1;
+	direction = int(Random() * 4) + 1;
+	direction *= 90;
 
+	Point p(cos(Radians(direction)), sin(Radians(direction)));
+	if (MapData::getInstance().getOneGridData(grid + p).canBeInvade())
+		grid += p;
 	position = GridtoCenterXY(grid);
 
-	if (grid != formerGrid)
+	if (grid != formerGrid || direction != formerDirection)
 	{
-		MapData::getInstance().getOneGridData(formerGrid).deleteCharacterPointer();
-		MapData::getInstance().getOneGridData(grid).setCharacterPointer(this);
+		//MapData::getInstance().getOneGridData(formerGrid).deleteCharacterPointer();
+		//MapData::getInstance().getOneGridData(grid).setCharacterPointer(this);
 
-		moved = true;
+		return true;
 	}
-	return moved;
+	return false;
 }
 
 class Sandbag :public Enemy
@@ -525,7 +607,7 @@ Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()
 {
 	if (MapData::getInstance().getOneGridData(XYtoGrid(position)).canBeDraw())
-		Rect(GridtoXY(XYtoGrid(position) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), gridSize)(img).draw().drawFrame(1, 1, color);
+		Rect(GridtoXY(XYtoGrid(position) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().gridSize)(img).draw().drawFrame(1, 1, color);
 }
 
 class Glasses :public Item
@@ -534,139 +616,57 @@ public:
 	Glasses(Point pos) :Item(pos)
 	{
 		img = Texture((L"Images/glasses.png"));
-		img.resize(gridSize);
 		name = L"Ogaki's glasses";
-		MapData::getInstance().getOneGridData(XYtoGrid(position)).setItemPointer(this);
 	}
 	Glasses(int x, int y) :Glasses(Point(x, y)) {}
 };
 
-//地形を描く
-void drawImage();
-void drawOneGridGround(Point, Size, int);
-
 void Main()
 {
 	MapData::getInstance().loadMap();
-	Window::Resize(GridtoXY(MapData::getInstance().getDrawRange()) + Point(logWidth, 0));
-	LogSystem::getInstance().setOrigin(Point(Window::Width() - logWidth, 0));
+	Window::Resize(GridtoXY(MapData::getInstance().getDrawRange()) + Point(LogSystem::getInstance().logWidth, 0));
+	LogSystem::getInstance().setOrigin(Point(Window::Width() - LogSystem::getInstance().logWidth, 0));
 
 	FontAsset::Register(L"statusFont", 18, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
-	characters.emplace_back(Player(5, 5));
-	//characters.emplace_back(Sandbag(4, 3));
-	//Glasses glasses(5, 4);
+	MapData::getInstance().registerCharacter(std::make_unique<Player>(5, 5));
+	MapData::getInstance().registerCharacter(std::make_unique<Sandbag>(4, 3));
+	//MapData::getInstance().registerItem(std::make_unique<Glasses>(5, 4));
 
 	while (System::Update())
 	{
-		for (size_t i = 0; i < characters.size(); i++)
-		{
-			characters[i]->draw();
-			characters[i].attack();
-		}
+		MapData::getInstance().update();
+		MapData::getInstance().drawImage();
 
-		MapData::getInstance().setAllGridEnableDraw();
-		drawImage();
+		//if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
+		//	MapData::getInstance().registerCharacter(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 
-		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
-			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
-
-		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).isUnderCharacter())
-			Println(MapData::getInstance().getCharacterPointer(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 		LogSystem::getInstance().displayLog();
 	}
 }
 
 Point GridtoXY(Point p)
 {
-	return Point(p.x*gridSize.x, p.y*gridSize.y);
+	return Point(p.x*MapData::getInstance().gridSize.x, p.y*MapData::getInstance().gridSize.y);
 }
 Point GridtoCenterXY(Point p)
 {
-	return Point(p.x*gridSize.x + gridSize.x / 2, p.y*gridSize.y + gridSize.y / 2);
+	return Point(p.x*MapData::getInstance().gridSize.x + MapData::getInstance().gridSize.x / 2, p.y*MapData::getInstance().gridSize.y + MapData::getInstance().gridSize.y / 2);
 }
 Point XYtoGrid(Vec2 p)
 {
-	return Point((int)(p.x / gridSize.x), (int)(p.y / gridSize.y));
+	return Point((int)(p.x / MapData::getInstance().gridSize.x), (int)(p.y / MapData::getInstance().gridSize.y));
 }
 Point GridtoXY(int x, int y)
 {
-	return Point(x*gridSize.x, y*gridSize.y);
+	return Point(x*MapData::getInstance().gridSize.x, y*MapData::getInstance().gridSize.y);
 }
 Point GridtoCenterXY(int x, int y)
 {
-	return Point(x*gridSize.x + gridSize.x / 2, y*gridSize.y + gridSize.y / 2);
+	return Point(x*MapData::getInstance().gridSize.x + MapData::getInstance().gridSize.x / 2, y*MapData::getInstance().gridSize.y + MapData::getInstance().gridSize.y / 2);
 }
 Point XYtoGrid(double x, double y)
 {
-	return Point((int)(x / gridSize.x), (int)(y / gridSize.y));
-}
-
-void drawImage()
-{
-	const Size range = MapData::getInstance().getDrawRange();
-	const Point startingPos = MapData::getInstance().getCenterPoint() - range / 2;
-	const Point endPos = startingPos + range;
-
-	for (int y = startingPos.y; y < endPos.y; y++)
-	{
-		for (int x = startingPos.x; x < endPos.x; x++)
-		{
-			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
-			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
-			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
-
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
-				k = 10;
-			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
-				k = 20;
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && MapData::getInstance().getOneGridData(x, y).isUnderItem())
-				k = 30;
-
-			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
-		}
-	}
-
-	for (int y = startingPos.y; y < endPos.y; y++)
-	{
-		for (int x = startingPos.x; x < endPos.x; x++)
-		{
-			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
-				MapData::getInstance().getItemPointer(x, y)->draw();
-
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter()&&Input::Key3.clicked)
-				MapData::getInstance().getCharacterPointer(x, y)->draw();
-		}
-	}
-
-	if (Input::Key0.clicked)
-		ClearPrint();
-}
-void drawOneGridGround(Point p, Size s, int k)
-{
-	switch (k)
-	{
-	case 0:
-		Rect(p, s).draw(Palette::Darkgray).drawFrame(1, 0, Palette::Black);
-		break;
-	case 1:
-		Rect(p, s).draw(Palette::Sandybrown).drawFrame(1, 0, Palette::Sienna);
-		break;
-
-	case 10:
-		Rect(p, s).draw(Color(Palette::Aqua.r, Palette::Aqua.g, Palette::Aqua.b, 150)).drawFrame(1, 0, Palette::Black);
-		break;
-	case 20:
-		Rect(p, s).draw(Color(Palette::Tomato.r, Palette::Tomato.g, Palette::Tomato.b, 150)).drawFrame(1, 0, Palette::Black);
-		break;
-	case 30:
-		Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 150)).drawFrame(1, 0, Palette::Black);
-		break;
-
-	default:
-		Rect(p, s).draw(Palette::Dimgray).drawFrame(1, 0, Palette::Black);
-		break;
-	}
-
+	return Point((int)(x / MapData::getInstance().gridSize.x), (int)(y / MapData::getInstance().gridSize.y));
 }
