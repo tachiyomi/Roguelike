@@ -131,8 +131,8 @@ public:
 	Character(int, int);
 	void draw();
 
-	bool move() {};
-	bool attack() {};
+	bool move() { return true; }
+	bool attack() { return true; }
 
 	void setPos(Point p) { position = GridtoCenterXY(p); }
 	void setRad(int d) { direction = d; }
@@ -298,6 +298,11 @@ public:
 		}
 	}
 
+	void registerCharacter()
+	{
+
+	}
+
 protected:
 	MapData();
 	virtual ~MapData() {}
@@ -306,6 +311,7 @@ private:
 	GridData outsideGrid;
 	Point centerGrid;
 	Size drawRange;
+	Array<Character> characters;
 };
 MapData::MapData()
 {
@@ -548,16 +554,17 @@ void Main()
 	FontAsset::Register(L"statusFont", 18, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
-	Array<Character> characters;
 	characters.emplace_back(Player(5, 5));
-	characters.emplace_back(Sandbag(4, 3));
+	//characters.emplace_back(Sandbag(4, 3));
 	//Glasses glasses(5, 4);
 
 	while (System::Update())
 	{
-		//player.move();
-
-		//player.attack();
+		for (size_t i = 0; i < characters.size(); i++)
+		{
+			characters[i]->draw();
+			characters[i].attack();
+		}
 
 		MapData::getInstance().setAllGridEnableDraw();
 		drawImage();
@@ -565,8 +572,8 @@ void Main()
 		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
 			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 
-		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
-			characters.emplace_back(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
+		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).isUnderCharacter())
+			Println(MapData::getInstance().getCharacterPointer(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 		LogSystem::getInstance().displayLog();
 	}
 }
