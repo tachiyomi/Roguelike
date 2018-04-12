@@ -212,22 +212,22 @@ public:
 	bool isUnderCharacter() { return characterPointer != nullptr; }
 	bool isUnderItem() { return itemPointer != nullptr; }
 
-	void setCharacterPointer(Character* c) { characterPointer = c; }
-	void setItemPointer(Item* i) { itemPointer = i; }
+	void setCharacterPointer(std::unique_ptr<Character> c) { characterPointer = std::move(c); }
+	void setItemPointer(std::unique_ptr<Item> i) { itemPointer = std::move(i); }
 
-	void deleteCharacterPointer() { characterPointer = nullptr; }
-	void deleteItemPointer() { itemPointer = nullptr; }
+	void deleteCharacterPointer() { characterPointer.reset(); }
+	void deleteItemPointer() { itemPointer.reset(); }
 
-	Character* getCharacterP() { return characterPointer; }
-	Item* getItemP() { return itemPointer; }
+	Character* getCharacterPointer() { return characterPointer.get(); }
+	Item* getItemPointer() { return itemPointer.get(); }
 
 private:
 	int terrain;
 	bool enableInvade;
 	bool enableDraw;
 
-	Character* characterPointer;
-	Item* itemPointer;
+	std::shared_ptr<Character> characterPointer;
+	std::shared_ptr<Item> itemPointer;
 };
 
 //全てのグリッドの情報
@@ -244,8 +244,10 @@ public:
 
 	void loadMap();
 	void drawOneGridGround(Point, Size, int);
-	void registerCharacter(std::unique_ptr<Character> c) { characters.emplace_back(std::move(c)); }
-	void registerItem(std::unique_ptr<Item> i) { items.emplace_back(std::move(i)); }
+
+	template<typename T>
+	void registerCharacter(T t) { getOneGridData(t.getPos()).setCharacterPointer(std::make_unique<T>(t.getPos())); }
+	void registerItem(std::unique_ptr<Item> i) { mapGrid[5][5].setItemPointer(std::move(i)); }
 	void setCenterPoint(Point p) { centerGrid = p; }
 
 	Grid<GridData>& getAllGridData() { return mapGrid; }
@@ -271,7 +273,7 @@ public:
 		if ((x < 0 || x >= (int)mapGrid.height) || (y < 0 || y >= (int)mapGrid.width))
 			return nullptr;
 		else
-			return mapGrid[x][y].getCharacterP();
+			return mapGrid[x][y].getCharacterPointer();
 	}
 	Character* getCharacterPointer(Point p)
 	{
@@ -280,7 +282,7 @@ public:
 		if ((x < 0 || x >= (int)mapGrid.height) || (y < 0 || y >= (int)mapGrid.width))
 			return nullptr;
 		else
-			return mapGrid[x][y].getCharacterP();
+			return mapGrid[x][y].getCharacterPointer();
 	}
 
 	Item* getItemPointer(int x, int y)
@@ -288,7 +290,7 @@ public:
 		if ((x < 0 || x >= (int)mapGrid.height) || (y < 0 || y >= (int)mapGrid.width))
 			return nullptr;
 		else
-			return mapGrid[x][y].getItemP();
+			return mapGrid[x][y].getItemPointer();
 	}
 	Item* getItemPointer(Point p)
 	{
@@ -297,7 +299,7 @@ public:
 		if ((x < 0 || x >= (int)mapGrid.height) || (y < 0 || y >= (int)mapGrid.width))
 			return nullptr;
 		else
-			return mapGrid[x][y].getItemP();
+			return mapGrid[x][y].getItemPointer();
 	}
 
 	Point getCenterPoint() { return centerGrid; }
@@ -319,12 +321,13 @@ protected:
 	MapData();
 	virtual ~MapData() {}
 private:
+
 	Grid<GridData> mapGrid;
 	GridData outsideGrid;
 	Point centerGrid;
 	Size drawRange;
-	Array<std::unique_ptr<Character>> characters;
-	Array<std::unique_ptr<Item>> items;
+	//Array<std::unique_ptr<Character>> characters;
+	//Array<std::unique_ptr<Item>> items;
 
 	Stopwatch updateTimer;
 };
@@ -359,16 +362,15 @@ void MapData::loadMap()
 }
 void MapData::update()
 {
-	for (auto& e : characters)
+	for (size_t y = 0; y < mapGrid.width; y++)
 	{
-		if (typeid(*e) == typeid(Player))
-			e->move();
-		else if (updateTimer.s() > 3)
-			e->move();
+		for (size_t x = 0; x < mapGrid.height; x++)
+		{
+			if(mapGrid[x][y].isUnderCharacter())
+				mapGrid[x][y].getCharacterPointer()->move();
+		}
 	}
-	if (updateTimer.s() <= 3)
-		return;
-	updateTimer.restart();
+	
 }
 void MapData::drawImage()
 {
@@ -392,9 +394,13 @@ void MapData::drawImage()
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 20;
 			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
+
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
+				MapData::getInstance().getOneGridData(x, y).getCharacterPointer()->draw();
 		}
 	}
 
+	/*
 	for (size_t i = 0; i < items.size(); i++)
 	{
 		if (MapData::getInstance().getOneGridData(items[i]->getPos()).canBeDraw())
@@ -405,6 +411,7 @@ void MapData::drawImage()
 		if (MapData::getInstance().getOneGridData(characters[i]->getPos()).canBeDraw())
 			characters[i]->draw();
 	}
+	*/
 
 	if (Input::Key0.clicked)
 		ClearPrint();
@@ -450,7 +457,7 @@ void Character::draw()
 {
 	if (!MapData::getInstance().getOneGridData(XYtoGrid(position)).canBeDraw())
 		return;
-	
+
 	const Point drawPosition = GridtoXY(XYtoGrid(position) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
 
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Point(MapData::getInstance().gridSize.x / 2 * cos(Radians(direction)), MapData::getInstance().gridSize.x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
@@ -515,11 +522,11 @@ bool Player::move()
 
 	if (grid != formerGrid || direction != formerDirection)
 	{
-		//MapData::getInstance().getOneGridData(formerGrid).deleteCharacterPointer();
-		//MapData::getInstance().getOneGridData(grid).setCharacterPointer(this);
+		MapData::getInstance().getOneGridData(formerGrid).deleteCharacterPointer();
+		MapData::getInstance().getOneGridData(grid).setCharacterPointer();
 
-		if (MapData::getInstance().getOneGridData(grid).getItemP())
-			LogSystem::getInstance().addLog(MapData::getInstance().getItemPointer(grid)->getName() + L"を踏んでしまった。");
+		//if (MapData::getInstance().getOneGridData(grid).getItemPointer())
+		//	LogSystem::getInstance().addLog(MapData::getInstance().getItemPointer(grid)->getName() + L"を踏んでしまった。");
 
 		return true;
 	}
@@ -630,8 +637,8 @@ void Main()
 	FontAsset::Register(L"statusFont", 18, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
-	MapData::getInstance().registerCharacter(std::make_unique<Player>(5, 5));
-	MapData::getInstance().registerCharacter(std::make_unique<Sandbag>(4, 3));
+	//MapData::getInstance().getOneGridData(5,5).setCharacterPointer(std::make_unique<Player>(5, 5));
+	MapData::getInstance().registerCharacter(Player(5, 5));
 	//MapData::getInstance().registerItem(std::make_unique<Glasses>(5, 4));
 
 	while (System::Update())
