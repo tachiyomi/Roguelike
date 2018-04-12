@@ -632,15 +632,15 @@ void Main()
 
 	MapData::getInstance().registerCharacter(std::make_unique<Player>(5, 5));
 	MapData::getInstance().registerCharacter(std::make_unique<Sandbag>(4, 3));
-	//MapData::getInstance().registerItem(std::make_unique<Glasses>(5, 4));
+	MapData::getInstance().registerItem(std::make_unique<Glasses>(5, 4));
 
 	while (System::Update())
 	{
 		MapData::getInstance().update();
 		MapData::getInstance().drawImage();
 
-		//if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
-		//	MapData::getInstance().registerCharacter(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
+		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
+			MapData::getInstance().registerCharacter(std::make_unique<Sandbag>(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
 
 		LogSystem::getInstance().displayLog();
 	}
