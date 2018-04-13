@@ -39,9 +39,10 @@ public:
 
 	void displayLog();
 	void addLog(String);
-	void setOrigin(Point p) { origin = p; }
 
-	int logWidth = 500;
+	void setOrigin(Point p) { logOrigin = p; }
+	void setSize(Size s) { logSize = s; }
+	const Size getSize() { return logSize; }
 protected:
 	LogSystem();
 	virtual ~LogSystem() {}
@@ -49,13 +50,33 @@ private:
 	//void operator = (const logSystem& obj) {}
 	//logSystem(const logSystem &obj) {}
 
-	Point origin;
 	int maxLogSize;
+	Point logOrigin;
+	Size logSize;
 	std::deque<LogData> log;
 	Array<IconData> icon;
 };
+LogSystem::LogSystem() :
+	maxLogSize(20),
+	logOrigin(0, Window::Height()),
+	logSize(Window::Width(), 160)
+{
+	for (int i = 1; i <= 5; i++)
+		icon.emplace_back(Format(L"Images/icon_nadeshiko_{}.png"_fmt, i), Format(L"<nade{}>"_fmt, i), Palette::Pink);
+
+	for (int i = 1; i <= 5; i++)
+		icon.emplace_back(Format(L"Images/icon_shimarin_{}.png"_fmt, i), Format(L"<shima{}>"_fmt, i), Palette::Royalblue);
+
+	const int iconHeight = 50;
+	for (size_t i = 0; i < icon.size(); i++)
+	{
+		const double ratio = iconHeight / (double)(icon[i].size.y);
+		icon[i].size = Size((int)(icon[i].size.x*ratio), (int)(icon[i].size.y*ratio));
+	}
+}
 void LogSystem::displayLog()
 {
+	Transformer2D transformer(Mat3x2::Translate(logOrigin), false);
 	const int gap = 10;
 	int h = 0;
 	for (int i = 0; i < maxLogSize; i++)
@@ -67,19 +88,19 @@ void LogSystem::displayLog()
 		if (log.at(i).icon == -1)
 		{
 			h += FontAsset(L"logFont").height + gap;
-			FontAsset(L"logFont")(log.at(i).str).draw(origin + Point(gap, h - gap - FontAsset(L"logFont").ascent));
+			FontAsset(L"logFont")(log.at(i).str).draw(gap, h - gap - FontAsset(L"logFont").ascent);
 		}
 		else
 		{
 			icon[log.at(i).icon].img.resize(icon[log.at(i).icon].size)
-				.draw(origin + Point(gap, h + gap)).drawFrame(0, 2, icon[log.at(i).icon].color);
+				.draw(gap, h + gap).drawFrame(0, 2, icon[log.at(i).icon].color);
 
 			h += icon[log.at(i).icon].size.y + gap + 2;
 
 			FontAsset(L"logFont")(log.at(i).str)
-				.draw(origin + Point(gap * 2 + icon[log.at(i).icon].size.x, h - gap - FontAsset(L"logFont").ascent));
+				.draw(gap * 2 + icon[log.at(i).icon].size.x, h - gap - FontAsset(L"logFont").ascent);
 		}
-		Line(origin.x, h, Window::Width(), h).draw(Palette::Gold);
+		Line(0, h, logSize.x, h).draw(Palette::Gold);
 	}
 }
 void LogSystem::addLog(String str)
@@ -97,23 +118,6 @@ void LogSystem::addLog(String str)
 	log.push_front(LogData(str, k));
 	if ((int)log.size() > maxLogSize)
 		log.pop_back();
-}
-LogSystem::LogSystem() :
-	maxLogSize(20),
-	origin(Window::Width(), 0)
-{
-	for (int i = 1; i <= 5; i++)
-		icon.emplace_back(Format(L"Images/icon_nadeshiko_{}.png"_fmt, i), Format(L"<nade{}>"_fmt, i), Palette::Pink);
-
-	for (int i = 1; i <= 5; i++)
-		icon.emplace_back(Format(L"Images/icon_shimarin_{}.png"_fmt, i), Format(L"<shima{}>"_fmt, i), Palette::Royalblue);
-
-	const int iconHeight = 50;
-	for (size_t i = 0; i < icon.size(); i++)
-	{
-		const double ratio = iconHeight / (double)(icon[i].size.y);
-		icon[i].size = Size((int)(icon[i].size.x*ratio), (int)(icon[i].size.y*ratio));
-	}
 }
 
 //マップグリッドとXY座標の相互変換
@@ -239,8 +243,6 @@ public:
 	template<typename T>
 	void registerItem(T t) { items.emplace_back(std::make_unique<T>(t.getGridPosition())); }
 
-	void setCenterPoint(Point p) { centerGrid = p; }
-
 	GridData& getOneGridData(int x, int y) 
 	{
 		if ((x < 0 || x >= (int)mapGrid.height) || (y < 0 || y >= (int)mapGrid.width))
@@ -296,8 +298,12 @@ public:
 		return nullptr;
 	}
 
+	void setCenterPoint(Point p) { centerGrid = p; }
+	void setDrawRange(Size s) { mainDrawRange = s; }
+	void setGridSize(Size s) { mainGridSize = s; }
 	Point getCenterPoint() { return centerGrid; }
-	Size getDrawRange() { return drawRange; }
+	Size getDrawRange() { return mainDrawRange; }
+	Size getGridSize() { return mainGridSize; }
 
 	void setAllGridEnableDraw()
 	{
@@ -310,7 +316,6 @@ public:
 		}
 	}
 
-	Size gridSize = Size::One * 80;
 protected:
 	MapData();
 	virtual ~MapData() {}
@@ -319,7 +324,9 @@ private:
 	Grid<GridData> mapGrid;
 	GridData outsideGrid;
 	Point centerGrid;
-	Size drawRange;
+	Size mainDrawRange;
+	Size mainGridSize; Point mainOrigin; Size mainDrawSize;;
+	Size subGridSize; Point subOrigin; Size subDrawSize;
 	Array<std::unique_ptr<Character>> characters;
 	Array<std::unique_ptr<Item>> items;
 
@@ -329,7 +336,12 @@ MapData::MapData()
 {
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
-	drawRange = Size(7, 7);
+	mainDrawRange = Size(7, 7);
+	mainGridSize = Size(60, 60);
+	mainOrigin = Point(0, 0);
+	mainDrawSize = mainDrawRange*mainGridSize;
+	subOrigin = Point(mainDrawSize.x, 0);
+	subDrawSize = mainDrawSize;
 
 	updateTimer.start();
 }
@@ -353,6 +365,8 @@ void MapData::loadMap()
 		}
 	}
 	LogSystem::getInstance().addLog(L"Map has been loaded.");
+
+	subGridSize = subDrawSize / std::max((int)mapGrid.height, (int)mapGrid.width);
 }
 void MapData::update()
 {
@@ -377,7 +391,7 @@ void MapData::drawImage()
 		{
 			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
-			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
+			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
 
 			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 30;
@@ -385,7 +399,7 @@ void MapData::drawImage()
 				k = 10;
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 20;
-			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), gridSize, k);
+			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
 		}
 	}
 
@@ -448,7 +462,7 @@ void Character::draw()
 
 	const Vec2 drawPosition = GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
 	//Circle(drawPosition + Vec2(MapData::getInstance().gridSize.x / 2 * cos(Radians(direction)), MapData::getInstance().gridSize.x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
-	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().gridSize)(img).draw().drawFrame(1, 1, color);
+	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getGridSize())(img).draw().drawFrame(1, 1, color);
 	
 	//FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, gridSize.y / 3 * 0), Palette::Black);
 	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
@@ -510,6 +524,7 @@ bool Player::move()
 	{
 		MapData::getInstance().getOneGridData(formerGrid).underCharacter = false;
 		MapData::getInstance().getOneGridData(gridPosition).underCharacter = true;
+		MapData::getInstance().setCenterPoint(gridPosition);
 
 		if (MapData::getInstance().getOneGridData(gridPosition).isUnderItem())
 			LogSystem::getInstance().addLog(MapData::getInstance().getItemPointer(gridPosition)->getName() + L"を踏んでしまった。");
@@ -601,7 +616,7 @@ Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()
 {
 	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw())
-		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().gridSize)(img).draw().drawFrame(1, 1, color);
+		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getGridSize())(img).draw().drawFrame(1, 1, color);
 }
 
 class Glasses :public Item
@@ -618,8 +633,9 @@ public:
 void Main()
 {
 	MapData::getInstance().loadMap();
-	Window::Resize(GridtoXY(MapData::getInstance().getDrawRange()) + Point(LogSystem::getInstance().logWidth, 0));
-	LogSystem::getInstance().setOrigin(Point(Window::Width() - LogSystem::getInstance().logWidth, 0));
+	Window::Resize(GridtoXY(MapData::getInstance().getDrawRange().x * 2, MapData::getInstance().getDrawRange().y) + Point(0, LogSystem::getInstance().getSize().y));
+	LogSystem::getInstance().setOrigin(Point(0, Window::Height() - LogSystem::getInstance().getSize().y));
+	LogSystem::getInstance().setSize(Size(Window::Width(), LogSystem::getInstance().getSize().y));
 
 	FontAsset::Register(L"statusFont", 18, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
@@ -641,25 +657,25 @@ void Main()
 
 Point GridtoXY(Point p)
 {
-	return Point(p.x*MapData::getInstance().gridSize.x, p.y*MapData::getInstance().gridSize.y);
+	return Point(p.x*MapData::getInstance().getGridSize().x, p.y*MapData::getInstance().getGridSize().y);
 }
 Point GridtoCenterXY(Point p)
 {
-	return Point(p.x*MapData::getInstance().gridSize.x + MapData::getInstance().gridSize.x / 2, p.y*MapData::getInstance().gridSize.y + MapData::getInstance().gridSize.y / 2);
+	return Point(p.x*MapData::getInstance().getGridSize().x + MapData::getInstance().getGridSize().x / 2, p.y*MapData::getInstance().getGridSize().y + MapData::getInstance().getGridSize().y / 2);
 }
 Point XYtoGrid(Vec2 p)
 {
-	return Point((int)(p.x / MapData::getInstance().gridSize.x), (int)(p.y / MapData::getInstance().gridSize.y));
+	return Point((int)(p.x / MapData::getInstance().getGridSize().x), (int)(p.y / MapData::getInstance().getGridSize().y));
 }
 Point GridtoXY(int x, int y)
 {
-	return Point(x*MapData::getInstance().gridSize.x, y*MapData::getInstance().gridSize.y);
+	return Point(x*MapData::getInstance().getGridSize().x, y*MapData::getInstance().getGridSize().y);
 }
 Point GridtoCenterXY(int x, int y)
 {
-	return Point(x*MapData::getInstance().gridSize.x + MapData::getInstance().gridSize.x / 2, y*MapData::getInstance().gridSize.y + MapData::getInstance().gridSize.y / 2);
+	return Point(x*MapData::getInstance().getGridSize().x + MapData::getInstance().getGridSize().x / 2, y*MapData::getInstance().getGridSize().y + MapData::getInstance().getGridSize().y / 2);
 }
 Point XYtoGrid(double x, double y)
 {
-	return Point((int)(x / MapData::getInstance().gridSize.x), (int)(y / MapData::getInstance().gridSize.y));
+	return Point((int)(x / MapData::getInstance().getGridSize().x), (int)(y / MapData::getInstance().getGridSize().y));
 }
