@@ -59,7 +59,7 @@ private:
 LogSystem::LogSystem() :
 	maxLogSize(20),
 	logOrigin(0, Window::Height()),
-	logSize(Window::Width(), 160)
+	logSize(Window::Width(), 180)
 {
 	for (int i = 1; i <= 5; i++)
 		icon.emplace_back(Format(L"Images/icon_nadeshiko_{}.png"_fmt, i), Format(L"<nade{}>"_fmt, i), Palette::Pink);
@@ -125,6 +125,7 @@ Point GridtoXY(Point);
 Point GridtoCenterXY(Point);
 Point XYtoGrid(Vec2);
 Point GridtoXY(int, int);
+Point SubGridtoXY(int, int);
 Point GridtoCenterXY(int, int);
 Point XYtoGrid(double, double);
 
@@ -233,7 +234,8 @@ public:
 		return Instance;
 	}
 	void update();
-	void drawImage();
+	void drawMainMap();
+	void drawSubMap();
 
 	void loadMap();
 	void drawOneGridGround(Point, Size, int);
@@ -303,7 +305,8 @@ public:
 	void setGridSize(Size s) { mainGridSize = s; }
 	Point getCenterPoint() { return centerGrid; }
 	Size getDrawRange() { return mainDrawRange; }
-	Size getGridSize() { return mainGridSize; }
+	Size getMainGridSize() { return mainGridSize; }
+	Size getSubGridSize() { return subGridSize; }
 
 	void setAllGridEnableDraw()
 	{
@@ -340,8 +343,8 @@ MapData::MapData()
 	mainGridSize = Size(60, 60);
 	mainOrigin = Point(0, 0);
 	mainDrawSize = mainDrawRange*mainGridSize;
-	subOrigin = Point(mainDrawSize.x, 0);
-	subDrawSize = mainDrawSize;
+	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
+	subDrawSize = mainDrawSize - Size::One * 40;
 
 	updateTimer.start();
 }
@@ -378,8 +381,9 @@ void MapData::update()
 	if (updateTimer.s() > 2)
 		updateTimer.restart();
 }
-void MapData::drawImage()
+void MapData::drawMainMap()
 {
+	Transformer2D transformer(Mat3x2::Translate(mainOrigin), false);
 	setAllGridEnableDraw();
 	const Size range = MapData::getInstance().getDrawRange();
 	const Point startingPos = MapData::getInstance().getCenterPoint() - range / 2;
@@ -393,12 +397,15 @@ void MapData::drawImage()
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
 			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
 
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter() && MapData::getInstance().getOneGridData(x, y).isUnderItem())
-				k = 30;
-			else if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
-				k = 10;
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
+			{
+				if (typeid(*getCharacterPointer(x, y)) == typeid(Player))
+					k = 10;
+				else
+					k = 20;
+			}
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
-				k = 20;
+				k = 30;
 			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
 		}
 	}
@@ -417,6 +424,30 @@ void MapData::drawImage()
 	if (Input::Key0.clicked)
 		ClearPrint();
 }
+void MapData::drawSubMap()
+{
+	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
+	for (int y = 0; y < mapGrid.width; y++)
+	{
+		for (int x = 0; x < mapGrid.height; x++)
+		{
+			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
+			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
+			drawOneGridGround(SubGridtoXY(x, y), subGridSize, k);
+
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
+			{
+				if (typeid(*getCharacterPointer(x, y)) == typeid(Player))
+					k = 100;
+				else
+					k = 200;
+			}
+			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
+				k = 300;
+			drawOneGridGround(SubGridtoXY(x, y), subGridSize, k);
+		}
+	}
+}
 void MapData::drawOneGridGround(Point p, Size s, int k)
 {
 	switch (k)
@@ -428,14 +459,26 @@ void MapData::drawOneGridGround(Point p, Size s, int k)
 		Rect(p, s).draw(Palette::Sandybrown).drawFrame(1, 0, Palette::Sienna);
 		break;
 
+	//mainMap
 	case 10:
-		Rect(p, s).draw(Color(Palette::Aqua.r, Palette::Aqua.g, Palette::Aqua.b, 150)).drawFrame(1, 0, Palette::Black);
+		Rect(p, s).draw(Color(Palette::Aqua, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 	case 20:
-		Rect(p, s).draw(Color(Palette::Tomato.r, Palette::Tomato.g, Palette::Tomato.b, 150)).drawFrame(1, 0, Palette::Black);
+		Rect(p, s).draw(Color(Palette::Tomato, 100)).drawFrame(1, 0, Palette::Black); 
 		break;
 	case 30:
-		Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 150)).drawFrame(1, 0, Palette::Black);
+		Rect(p, s).draw(Color(Palette::Mediumspringgreen, 100)).drawFrame(1, 0, Palette::Black);
+		break;
+
+	//subMap
+	case 100:
+		Rect(p, s).draw(Color(Palette::Aqua, 200)).drawFrame(1, 0, Palette::Black);
+		break;
+	case 200:
+		Rect(p, s).draw(Color(Palette::Tomato, 200)).drawFrame(1, 0, Palette::Black);
+		break;
+	case 300:
+		Rect(p, s).draw(Color(Palette::Mediumspringgreen, 200)).drawFrame(1, 0, Palette::Black);
 		break;
 
 	default:
@@ -461,10 +504,10 @@ void Character::draw()
 		return;
 
 	const Vec2 drawPosition = GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
-	//Circle(drawPosition + Vec2(MapData::getInstance().gridSize.x / 2 * cos(Radians(direction)), MapData::getInstance().gridSize.x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
-	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getGridSize())(img).draw().drawFrame(1, 1, color);
+	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
+	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().getMainGridSize().x / 2 * cos(Radians(direction)), MapData::getInstance().getMainGridSize().x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
 	
-	//FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, gridSize.y / 3 * 0), Palette::Black);
+	FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, MapData::getInstance().getMainGridSize().y / 3 * 0), Palette::Black);
 	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
 	//FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
 }
@@ -616,7 +659,7 @@ Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()
 {
 	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw())
-		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getGridSize())(img).draw().drawFrame(1, 1, color);
+		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
 }
 
 class Glasses :public Item
@@ -637,7 +680,7 @@ void Main()
 	LogSystem::getInstance().setOrigin(Point(0, Window::Height() - LogSystem::getInstance().getSize().y));
 	LogSystem::getInstance().setSize(Size(Window::Width(), LogSystem::getInstance().getSize().y));
 
-	FontAsset::Register(L"statusFont", 18, Typeface::Medium);
+	FontAsset::Register(L"statusFont", MapData::getInstance().getMainGridSize().x / 6.0, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
 	MapData::getInstance().registerCharacter(Player(5, 5));
@@ -646,7 +689,8 @@ void Main()
 	while (System::Update())
 	{
 		MapData::getInstance().update();
-		MapData::getInstance().drawImage();
+		MapData::getInstance().drawSubMap();
+		MapData::getInstance().drawMainMap();
 
 		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
 			MapData::getInstance().registerCharacter(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
@@ -657,25 +701,29 @@ void Main()
 
 Point GridtoXY(Point p)
 {
-	return Point(p.x*MapData::getInstance().getGridSize().x, p.y*MapData::getInstance().getGridSize().y);
+	return Point(p.x*MapData::getInstance().getMainGridSize().x, p.y*MapData::getInstance().getMainGridSize().y);
 }
 Point GridtoCenterXY(Point p)
 {
-	return Point(p.x*MapData::getInstance().getGridSize().x + MapData::getInstance().getGridSize().x / 2, p.y*MapData::getInstance().getGridSize().y + MapData::getInstance().getGridSize().y / 2);
+	return Point(p.x*MapData::getInstance().getMainGridSize().x + MapData::getInstance().getMainGridSize().x / 2, p.y*MapData::getInstance().getMainGridSize().y + MapData::getInstance().getMainGridSize().y / 2);
 }
 Point XYtoGrid(Vec2 p)
 {
-	return Point((int)(p.x / MapData::getInstance().getGridSize().x), (int)(p.y / MapData::getInstance().getGridSize().y));
+	return Point((int)(p.x / MapData::getInstance().getMainGridSize().x), (int)(p.y / MapData::getInstance().getMainGridSize().y));
 }
 Point GridtoXY(int x, int y)
 {
-	return Point(x*MapData::getInstance().getGridSize().x, y*MapData::getInstance().getGridSize().y);
+	return Point(x*MapData::getInstance().getMainGridSize().x, y*MapData::getInstance().getMainGridSize().y);
+}
+Point SubGridtoXY(int x, int y)
+{
+	return Point(x*MapData::getInstance().getSubGridSize().x, y*MapData::getInstance().getSubGridSize().y);
 }
 Point GridtoCenterXY(int x, int y)
 {
-	return Point(x*MapData::getInstance().getGridSize().x + MapData::getInstance().getGridSize().x / 2, y*MapData::getInstance().getGridSize().y + MapData::getInstance().getGridSize().y / 2);
+	return Point(x*MapData::getInstance().getMainGridSize().x + MapData::getInstance().getMainGridSize().x / 2, y*MapData::getInstance().getMainGridSize().y + MapData::getInstance().getMainGridSize().y / 2);
 }
 Point XYtoGrid(double x, double y)
 {
-	return Point((int)(x / MapData::getInstance().getGridSize().x), (int)(y / MapData::getInstance().getGridSize().y));
+	return Point((int)(x / MapData::getInstance().getMainGridSize().x), (int)(y / MapData::getInstance().getMainGridSize().y));
 }
