@@ -358,10 +358,13 @@ void MapData::update()
 {
 	for (auto& e : characters)
 	{
-		if (typeid(*e) == typeid(Player) || updateTimer.s() > 2)
+		if (typeid(*e) == typeid(Player) || updateTimer.s() > 3)
+		{
 			e->move();
+			e->attack();
+		}
 	}
-	if (updateTimer.s() > 2)
+	if (updateTimer.s() > 3)
 		updateTimer.restart();
 }
 void MapData::drawImage()
@@ -415,13 +418,13 @@ void MapData::drawOneGridGround(Point p, Size s, int k)
 		break;
 
 	case 10:
-		Rect(p, s).draw(Color(Palette::Aqua.r, Palette::Aqua.g, Palette::Aqua.b, 150)).drawFrame(1, 0, Palette::Black);
+		Rect(p, s).draw(Color(Palette::Aqua.r, Palette::Aqua.g, Palette::Aqua.b, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 	case 20:
-		Rect(p, s).draw(Color(Palette::Tomato.r, Palette::Tomato.g, Palette::Tomato.b, 150)).drawFrame(1, 0, Palette::Black);
+		Rect(p, s).draw(Color(Palette::Tomato.r, Palette::Tomato.g, Palette::Tomato.b, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 	case 30:
-		Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 150)).drawFrame(1, 0, Palette::Black);
+		Rect(p, s).draw(Color(Palette::Mediumorchid.r, Palette::Mediumorchid.g, Palette::Mediumorchid.b, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 
 	default:
@@ -447,10 +450,10 @@ void Character::draw()
 		return;
 
 	const Vec2 drawPosition = GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
-	//Circle(drawPosition + Vec2(MapData::getInstance().gridSize.x / 2 * cos(Radians(direction)), MapData::getInstance().gridSize.x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
 	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().gridSize)(img).draw().drawFrame(1, 1, color);
+	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().gridSize.x / 2 * cos(Radians(direction)), MapData::getInstance().gridSize.x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
 	
-	//FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, gridSize.y / 3 * 0), Palette::Black);
+	FontAsset(L"statusFont")(ToString(HP)).draw(drawPosition + Point(5, MapData::getInstance().gridSize.y / 3 * 0), Palette::Black);
 	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
 	//FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
 }
@@ -510,6 +513,7 @@ bool Player::move()
 	{
 		MapData::getInstance().getOneGridData(formerGrid).underCharacter = false;
 		MapData::getInstance().getOneGridData(gridPosition).underCharacter = true;
+		MapData::getInstance().setCenterPoint(gridPosition);
 
 		if (MapData::getInstance().getOneGridData(gridPosition).isUnderItem())
 			LogSystem::getInstance().addLog(MapData::getInstance().getItemPointer(gridPosition)->getName() + L"を踏んでしまった。");
