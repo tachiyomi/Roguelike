@@ -375,10 +375,13 @@ void MapData::update()
 {
 	for (auto& e : characters)
 	{
-		if (typeid(*e) == typeid(Player) || updateTimer.s() > 2)
+		if (typeid(*e) == typeid(Player) || updateTimer.s() > 3)
+		{
 			e->move();
+			e->attack();
+		}
 	}
-	if (updateTimer.s() > 2)
+	if (updateTimer.s() > 3)
 		updateTimer.restart();
 }
 void MapData::drawMainMap()
@@ -686,6 +689,7 @@ void Main()
 	MapData::getInstance().registerCharacter(Player(5, 5));
 	MapData::getInstance().registerItem(Glasses(5, 4));
 
+	LogSystem::getInstance().addLog(L"Click a grid to create an enemy.");
 	while (System::Update())
 	{
 		MapData::getInstance().update();
