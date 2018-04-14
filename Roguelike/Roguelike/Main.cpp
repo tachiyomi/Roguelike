@@ -128,6 +128,7 @@ Point GridtoXY(int, int);
 Point SubGridtoXY(int, int);
 Point GridtoCenterXY(int, int);
 Point XYtoGrid(double, double);
+Point getMouseGrid();
 
 //キャラクター
 class Character
@@ -138,6 +139,8 @@ public:
 	virtual void draw();
 	virtual bool move();
 	virtual bool attack();
+	virtual bool enableLive() { return HP > 0; }
+	virtual void doSomethingAtDeath();
 
 	void setGridPosition(Point p) { gridPosition = p; }
 	void setRad(int d) { direction = d; }
@@ -145,7 +148,7 @@ public:
 	double getRad() { return Radians(direction); }
 
 	String getName() { return name; }
-	int causeDamage(int damage) { return HP -= damage; }
+	int causeDamage(int damage) { return HP = damage > HP ? 0 : HP - damage; }
 
 	//void setHP(int h) { HP = h; }
 	//void setATK(int a) { ATK = a; }
@@ -180,6 +183,9 @@ public:
 	Item(Point);
 	Item(int, int);
 	virtual void draw();
+	virtual bool enableLive() { return false; }
+	virtual void doSomethingAtDeath();
+
 	void setGridPosition(Point p) { gridPosition = p; }
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
@@ -212,7 +218,8 @@ public:
 	void setEnableDraw(bool b) { enableDraw = b; }
 
 	int getTerrain() { return terrain; }
-	bool canBeInvade() { return enableInvade && !underCharacter; }
+	bool enableAddCharacter() { return enableInvade && !underCharacter; }
+	bool enableAddItem() { return enableInvade && !underItem; }
 	bool canBeDraw() { return enableDraw; }
 	bool isUnderCharacter() { return underCharacter; }
 	bool isUnderItem() { return underItem; }
@@ -236,6 +243,7 @@ public:
 	void update();
 	void drawMainMap();
 	void drawSubMap();
+	void deletecCharacter();
 
 	void loadMap();
 	void drawOneGridGround(Point, Size, int);
@@ -340,7 +348,7 @@ MapData::MapData()
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
 	mainDrawRange = Size(7, 7);
-	mainGridSize = Size(60, 60);
+	mainGridSize = Size(80, 80);
 	mainOrigin = Point(0, 0);
 	mainDrawSize = mainDrawRange*mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
@@ -430,9 +438,9 @@ void MapData::drawMainMap()
 void MapData::drawSubMap()
 {
 	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
-	for (int y = 0; y < mapGrid.width; y++)
+	for (size_t y = 0; y < mapGrid.width; y++)
 	{
-		for (int x = 0; x < mapGrid.height; x++)
+		for (size_t x = 0; x < mapGrid.height; x++)
 		{
 			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
@@ -448,6 +456,19 @@ void MapData::drawSubMap()
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 300;
 			drawOneGridGround(SubGridtoXY(x, y), subGridSize, k);
+		}
+	}
+}
+void MapData::deletecCharacter()
+{
+	for (size_t i = 0; i < characters.size(); i++)
+	{
+		if (!characters[i]->enableLive())
+		{
+			getOneGridData(characters[i]->getGridPosition()).underCharacter = false;
+			characters[i]->doSomethingAtDeath();
+			characters.erase(characters.begin() + i);
+			i--;
 		}
 	}
 }
@@ -522,6 +543,10 @@ bool Character::attack()
 {
 	return false;
 }
+void Character::doSomethingAtDeath()
+{
+	LogSystem::getInstance().addLog(name + L"を倒しました。");
+}
 
 //プレイヤー
 Player::Player(Point pos) :Character(pos)
@@ -562,7 +587,7 @@ bool Player::move()
 		return false;
 
 	Point p(cos(Radians(direction)), sin(Radians(direction)));
-	if (MapData::getInstance().getOneGridData(gridPosition + p).canBeInvade())
+	if (MapData::getInstance().getOneGridData(gridPosition + p).enableAddCharacter())
 		gridPosition += p;
 	xyPosition = GridtoCenterXY(gridPosition);
 
@@ -585,9 +610,8 @@ bool Player::attack()
 		return false;
 
 	const Point frontOfMe = gridPosition + Point(cos(Radians(direction)), sin(Radians(direction)));
-
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
-	{ 
+	{
 		const int damage = ATK - MapData::getInstance().getCharacterPointer(frontOfMe)->getDEF();
 		MapData::getInstance().getCharacterPointer(frontOfMe)->causeDamage(damage);
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getCharacterPointer(frontOfMe)->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
@@ -609,31 +633,7 @@ public:
 		DEF = 70;
 	}
 	Enemy(int x, int y) :Enemy(Point(x, y)) {}
-
-	bool move()override;
 };
-bool Enemy::move()
-{
-	const Point formerGrid = gridPosition;
-	const int formerDirection = direction;
-
-	direction = int(Random() * 4) + 1;
-	direction *= 90;
-
-	Point p(cos(Radians(direction)), sin(Radians(direction)));
-	if (MapData::getInstance().getOneGridData(gridPosition + p).canBeInvade())
-		gridPosition += p;
-	xyPosition = GridtoCenterXY(gridPosition);
-
-	if (gridPosition != formerGrid || direction != formerDirection)
-	{
-		MapData::getInstance().getOneGridData(formerGrid).underCharacter = false;
-		MapData::getInstance().getOneGridData(gridPosition).underCharacter = true;
-		return true;
-	}
-
-	return false;
-}
 
 class Sandbag :public Enemy
 {
@@ -648,7 +648,67 @@ public:
 		DEF = 20;
 	}
 	Sandbag(int x, int y) :Sandbag(Point(x, y)) {}
+
+	bool move()override;
 };
+bool Sandbag::move()
+{
+	const Point formerGrid = gridPosition;
+	const int formerDirection = direction;
+
+	direction = int(Random() * 4) + 1;
+	direction *= 90;
+
+	Point p(cos(Radians(direction)), sin(Radians(direction)));
+	if (MapData::getInstance().getOneGridData(gridPosition + p).enableAddCharacter())
+		gridPosition += p;
+	xyPosition = GridtoCenterXY(gridPosition);
+
+	if (gridPosition != formerGrid || direction != formerDirection)
+	{
+		MapData::getInstance().getOneGridData(formerGrid).underCharacter = false;
+		MapData::getInstance().getOneGridData(gridPosition).underCharacter = true;
+		return true;
+	}
+
+	return false;
+}
+
+class Kyonshih :public Enemy
+{
+public:
+	Kyonshih(Point pos) :Enemy(pos)
+	{
+		img = Texture((L"Images/pop.png"));
+		name = L"Kyonshih";
+
+		HP = 200;
+		ATK = 40;
+		DEF = 40;
+	}
+	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
+
+	bool attack()override;
+};
+bool Kyonshih::attack()
+{
+	for (int i = 0; i < 4; i++)
+	{
+		const Point frontOfMe = gridPosition + Point(cos(Radians(i * 90)), sin(Radians(i * 90)));
+		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
+		{
+			if (typeid(*MapData::getInstance().getCharacterPointer(frontOfMe)) == typeid(Player))
+			{
+				const int damage = 20;
+				MapData::getInstance().getCharacterPointer(frontOfMe)->causeDamage(damage);
+				LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getCharacterPointer(frontOfMe)->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
+				direction = i * 90;
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 //アイテム
 Item::Item(Point pos)
@@ -663,6 +723,10 @@ void Item::draw()
 {
 	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw())
 		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
+}
+void Item::doSomethingAtDeath()
+{
+	LogSystem::getInstance().addLog(name + L"を倒しました。");
 }
 
 class Glasses :public Item
@@ -683,10 +747,11 @@ void Main()
 	LogSystem::getInstance().setOrigin(Point(0, Window::Height() - LogSystem::getInstance().getSize().y));
 	LogSystem::getInstance().setSize(Size(Window::Width(), LogSystem::getInstance().getSize().y));
 
-	FontAsset::Register(L"statusFont", MapData::getInstance().getMainGridSize().x / 6.0, Typeface::Medium);
+	FontAsset::Register(L"statusFont", int(MapData::getInstance().getMainGridSize().x / 6.0), Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
 	MapData::getInstance().registerCharacter(Player(5, 5));
+	MapData::getInstance().registerCharacter(Kyonshih(6, 7));
 	MapData::getInstance().registerItem(Glasses(5, 4));
 
 	LogSystem::getInstance().addLog(L"Click a grid to create an enemy.");
@@ -695,9 +760,13 @@ void Main()
 		MapData::getInstance().update();
 		MapData::getInstance().drawSubMap();
 		MapData::getInstance().drawMainMap();
+		MapData::getInstance().deletecCharacter();
 
-		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2).canBeInvade())
-			MapData::getInstance().registerCharacter(Sandbag(XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2));
+
+		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddCharacter())
+			MapData::getInstance().registerCharacter(Sandbag(getMouseGrid()));
+		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddItem())
+			MapData::getInstance().registerCharacter(Kyonshih(getMouseGrid()));
 
 		LogSystem::getInstance().displayLog();
 	}
@@ -731,3 +800,4 @@ Point XYtoGrid(double x, double y)
 {
 	return Point((int)(x / MapData::getInstance().getMainGridSize().x), (int)(y / MapData::getInstance().getMainGridSize().y));
 }
+Point getMouseGrid() { return XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2; }
