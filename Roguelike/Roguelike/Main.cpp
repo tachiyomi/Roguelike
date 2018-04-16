@@ -130,52 +130,6 @@ Point GridtoCenterXY(int, int);
 Point XYtoGrid(double, double);
 Point getMouseGrid();
 
-//キャラクター
-class Character
-{
-public:
-	Character(Point);
-	Character(int, int);
-	virtual void draw();
-	virtual bool move();
-	virtual bool attack();
-	virtual bool enableLive() { return HP > 0; }
-	virtual void doSomethingAtDeath();
-
-	void setGridPosition(Point p) { gridPosition = p; }
-	void setRad(int d) { direction = d; }
-	Point getGridPosition() { return gridPosition; }
-	double getRad() { return Radians(direction); }
-
-	String getName() { return name; }
-	int causeDamage(int damage) { return HP = damage > HP ? 0 : HP - damage; }
-
-	//void setHP(int h) { HP = h; }
-	//void setATK(int a) { ATK = a; }
-	//void setDEF(int d) { DEF = d; }
-	int getHP() { return HP; }
-	int getATK() { return ATK; }
-	int getDEF() { return DEF; }
-
-protected:
-	Texture img;
-	Vec2 xyPosition;
-	Point gridPosition;
-	Color color;
-	String name;
-	int direction;
-
-	int HP, ATK, DEF;
-};
-class Player :public Character
-{
-public:
-	Player(Point pos);
-	Player(int x, int y) :Player(Point(x, y)) {}
-
-	bool move()override;
-	bool attack()override;
-};
 //アイテム
 class Item
 {
@@ -195,6 +149,66 @@ protected:
 	Point gridPosition;
 	Color color;
 	String name;
+};
+
+//キャラクター
+enum CharacterStatus
+{
+	WaitKeyInput,
+	Acting,
+	EndAction,
+	WaitOtherAction
+};
+class Character
+{
+public:
+	Character(Point);
+	Character(int, int);
+	void act();
+	virtual void draw();
+	virtual bool move();
+	virtual bool attack();
+	virtual bool enableLive() { return HP > 0; }
+	virtual void doSomethingAtDeath();
+
+	void setGridPosition(Point p) { gridPosition = p; }
+	void setRad(int d) { direction = d; }
+	Point getGridPosition() { return gridPosition; }
+	double getRad() { return Radians(direction); }
+	void setStatus(CharacterStatus cs) { status = cs; }
+	CharacterStatus getStatus() { return status; }
+	Array<std::shared_ptr<Item>> getInventory() { return inventory; }
+
+	String getName() { return name; }
+	int causeDamage(int damage) { return HP = damage > HP ? 0 : HP - damage; }
+
+	//void setHP(int h) { HP = h; }
+	//void setATK(int a) { ATK = a; }
+	//void setDEF(int d) { DEF = d; }
+	int getHP() { return HP; }
+	int getATK() { return ATK; }
+	int getDEF() { return DEF; }
+
+protected:
+	Texture img;
+	Vec2 xyPosition;
+	Point gridPosition;
+	Color color;
+	String name;
+	int direction;
+
+	CharacterStatus status;
+	Array<std::shared_ptr<Item>>inventory;
+	int HP, ATK, DEF;
+};
+class Player :public Character
+{
+public:
+	Player(Point pos);
+	Player(int x, int y) :Player(Point(x, y)) {}
+
+	bool move()override;
+	bool attack()override;
 };
 
 //一つのグリッドの情報
@@ -243,15 +257,18 @@ public:
 	void update();
 	void drawMainMap();
 	void drawSubMap();
+	void drawInventory();
+
+	void sort() { ; }
 	void deletecCharacter();
 
 	void loadMap();
 	void drawOneGridGround(Point, Size, int);
 
 	template<typename T>
-	void registerCharacter(T t) { characters.emplace_back(std::make_unique<T>(t.getGridPosition())); }
+	void registerCharacter(T t) { characters.emplace_back(std::make_shared<T>(t.getGridPosition())); }
 	template<typename T>
-	void registerItem(T t) { items.emplace_back(std::make_unique<T>(t.getGridPosition())); }
+	void registerItem(T t) { items.emplace_back(std::make_shared<T>(t.getGridPosition())); }
 
 	GridData& getOneGridData(int x, int y) 
 	{
@@ -270,40 +287,40 @@ public:
 			return mapGrid[x][y];
 	}
 
-	Character* getCharacterPointer(int x, int y)
+	std::shared_ptr<Character> getCharacterPointer(int x, int y)
 	{
 		for (auto& e : characters)
 		{
 			if (e->getGridPosition() == Point(x, y))
-				return e.get();
+				return e;
 		}
 		return nullptr;
 	}
-	Character* getCharacterPointer(Point p)
+	std::shared_ptr<Character> getCharacterPointer(Point p)
 	{
 		for (auto& e : characters)
 		{
 			if (e->getGridPosition() == p)
-				return e.get();
+				return e;
 		}
 		return nullptr;
 	}
 
-	Item* getItemPointer(int x, int y)
+	std::shared_ptr<Item> getItemPointer(int x, int y)
 	{
 		for (auto& e : items)
 		{
 			if (e->getGridPosition() == Point(x, y))
-				return e.get();
+				return e;
 		}
 		return nullptr;
 	}
-	Item* getItemPointer(Point p)
+	std::shared_ptr<Item> getItemPointer(Point p)
 	{
 		for (auto& e : items)
 		{
 			if (e->getGridPosition() == p)
-				return e.get();
+				return e;
 		}
 		return nullptr;
 	}
@@ -338,8 +355,8 @@ private:
 	Size mainDrawRange;
 	Size mainGridSize; Point mainOrigin; Size mainDrawSize;;
 	Size subGridSize; Point subOrigin; Size subDrawSize;
-	Array<std::unique_ptr<Character>> characters;
-	Array<std::unique_ptr<Item>> items;
+	Array<std::shared_ptr<Character>> characters;
+	Array<std::shared_ptr<Item>> items;
 
 	Stopwatch updateTimer;
 };
@@ -353,8 +370,6 @@ MapData::MapData()
 	mainDrawSize = mainDrawRange*mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
 	subDrawSize = mainDrawSize - Size::One * 40;
-
-	updateTimer.start();
 }
 void MapData::loadMap()
 {
@@ -381,16 +396,28 @@ void MapData::loadMap()
 }
 void MapData::update()
 {
-	for (auto& e : characters)
+	if (AllOf(characters, [](std::shared_ptr<Character> c) {return c->getStatus() == CharacterStatus::WaitOtherAction; }))
 	{
-		if (typeid(*e) == typeid(Player) || updateTimer.s() > 3)
+		sort();
+		if(!characters.empty())
+			characters[0]->setStatus(CharacterStatus::WaitKeyInput);
+		return;
+	}
+
+	for (size_t i = 0; i < characters.size(); i++)
+	{
+		if (characters[i]->getStatus() == CharacterStatus::WaitKeyInput)
 		{
-			e->move();
-			e->attack();
+			characters[i]->act();
+		}
+		else if (characters[i]->getStatus() == CharacterStatus::EndAction)
+		{
+			characters[i]->setStatus(CharacterStatus::WaitOtherAction);
+			if (i != characters.size() - 1)
+				characters[i + 1]->setStatus(CharacterStatus::WaitKeyInput);
+			break;
 		}
 	}
-	if (updateTimer.s() > 3)
-		updateTimer.restart();
 }
 void MapData::drawMainMap()
 {
@@ -459,6 +486,12 @@ void MapData::drawSubMap()
 		}
 	}
 }
+void MapData::drawInventory()
+{
+	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
+	for (size_t i = 0; i < characters[0]->getInventory().size(); i++)
+		FontAsset(L"logFont")(characters[0]->getInventory()[i]->getName()).draw(0, i * 20);
+}
 void MapData::deletecCharacter()
 {
 	for (size_t i = 0; i < characters.size(); i++)
@@ -519,9 +552,17 @@ Character::Character(Point pos)
 	gridPosition = pos;
 	xyPosition = GridtoCenterXY(pos);
 	direction = 0;
+	status = CharacterStatus::WaitOtherAction;
 	MapData::getInstance().getOneGridData(pos).underCharacter = true;
 }
 Character::Character(int x, int y) :Character(Point(x, y)) {}
+void Character::act()
+{
+	if (move() || attack())
+	{
+		status = CharacterStatus::EndAction;
+	}
+}
 void Character::draw()
 {
 	if (!MapData::getInstance().getOneGridData(gridPosition).canBeDraw())
@@ -555,8 +596,9 @@ Player::Player(Point pos) :Character(pos)
 	color = Palette::Dodgerblue;
 	name = L"Player";
 	MapData::getInstance().setCenterPoint(gridPosition);
+	inventory.emplace_back(std::make_shared < Item >(10, 10));
 
-	HP = 100;
+	HP = 1000;
 	ATK = 80;
 	DEF = 60;
 }
@@ -591,7 +633,7 @@ bool Player::move()
 		gridPosition += p;
 	xyPosition = GridtoCenterXY(gridPosition);
 
-	if (gridPosition != formerGrid || direction != formerDirection)
+	if (gridPosition != formerGrid)
 	{
 		MapData::getInstance().getOneGridData(formerGrid).underCharacter = false;
 		MapData::getInstance().getOneGridData(gridPosition).underCharacter = true;
@@ -664,13 +706,12 @@ bool Sandbag::move()
 		gridPosition += p;
 	xyPosition = GridtoCenterXY(gridPosition);
 
-	if (gridPosition != formerGrid || direction != formerDirection)
+	if (gridPosition != formerGrid)
 	{
 		MapData::getInstance().getOneGridData(formerGrid).underCharacter = false;
 		MapData::getInstance().getOneGridData(gridPosition).underCharacter = true;
 		return true;
 	}
-
 	return false;
 }
 
@@ -707,7 +748,7 @@ bool Kyonshih::attack()
 			}
 		}
 	}
-	return false;
+	return true;
 }
 
 //アイテム
@@ -751,14 +792,20 @@ void Main()
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
 	MapData::getInstance().registerCharacter(Player(5, 5));
-	MapData::getInstance().registerCharacter(Kyonshih(6, 7));
+	MapData::getInstance().registerCharacter(Sandbag(6, 7));
 	MapData::getInstance().registerItem(Glasses(5, 4));
 
-	LogSystem::getInstance().addLog(L"Click a grid to create an enemy.");
+	bool enableSeeInvnentory = false;
 	while (System::Update())
 	{
+		if (Input::KeyShift.clicked)
+			enableSeeInvnentory = !enableSeeInvnentory;
+
 		MapData::getInstance().update();
-		MapData::getInstance().drawSubMap();
+		if (enableSeeInvnentory)
+			MapData::getInstance().drawInventory();
+		else
+			MapData::getInstance().drawSubMap();
 		MapData::getInstance().drawMainMap();
 		MapData::getInstance().deletecCharacter();
 
