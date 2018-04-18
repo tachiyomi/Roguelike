@@ -167,11 +167,10 @@ class Character
 public:
 	Character(Point);
 	Character(int, int);
-	void act();
+	virtual void act();
 	virtual void draw();
 	virtual bool move();
 	virtual bool attack();
-	virtual bool useItem();
 	virtual bool enableLive() { return HP > 0; }
 	virtual void doSomethingAtDeath();
 
@@ -210,11 +209,16 @@ public:
 	Player(Point pos);
 	Player(int x, int y) :Player(Point(x, y)) {}
 
+	void act()override;
 	bool move()override;
 	bool attack()override;
-	bool useItem()override;
-};
+	void openInventory() { isOpeningInventory = true; }
+	void closeInventory() { isOpeningInventory = false; }
 
+private:
+	bool isOpeningInventory;
+	int selectItemNumber;
+};
 //一つのグリッドの情報
 struct GridData
 {
@@ -268,7 +272,7 @@ public:
 	void update();
 	void drawMainMap();
 	void drawSubMap();
-	void drawInventory();
+	void drawInventory(int);
 
 	void sort() { ; }
 	void deleteObject();
@@ -386,8 +390,8 @@ MapData::MapData()
 {
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
-	mainDrawRange = Size(7, 7);
-	mainGridSize = Size(50, 50);
+	mainDrawRange = Size(5, 5);
+	mainGridSize = Size(90, 90);
 	mainOrigin = Point(0, 0);
 	mainDrawSize = mainDrawRange*mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
@@ -524,11 +528,16 @@ void MapData::drawSubMap()
 		}
 	}
 }
-void MapData::drawInventory()
+void MapData::drawInventory(int select)
 {
 	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
 	for (size_t i = 0; i < characters[0]->getInventory().size(); i++)
-		FontAsset(L"logFont")(L" " + characters[0]->getInventory()[i]->getName() + L" ").draw(0.0, (double)i * 30).drawFrame(0.0, 1.0, Palette::Gold);
+	{
+		if (i != select)
+			FontAsset(L"logFont")(L" " + characters[0]->getInventory()[i]->getName() + L" ").draw(0.0, (double)i * 30).drawFrame(0.0, 1.5, Palette::Gold);
+		else
+			FontAsset(L"logFont")(L" " + characters[0]->getInventory()[i]->getName() + L" ").draw(0.0, (double)i * 30).drawFrame(0.0, 1.5, Palette::Red);
+	}
 }
 void MapData::deleteObject()
 {
@@ -604,7 +613,7 @@ Character::Character(Point pos)
 Character::Character(int x, int y) :Character(Point(x, y)) {}
 void Character::act()
 {
-	if (move() || attack() || useItem())
+	if (move() || attack())
 	{
 		status = CharacterStatus::EndAction;
 	}
@@ -630,10 +639,6 @@ bool Character::attack()
 {
 	return false;
 }
-bool Character::useItem()
-{
-	return false;
-}
 void Character::doSomethingAtDeath()
 {
 	LogSystem::getInstance().addLog(name + L"を倒しました。");
@@ -647,9 +652,31 @@ Player::Player(Point pos) :Character(pos)
 	name = L"なでしこ";
 	MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 
+	isOpeningInventory = false;
+	selectItemNumber = 0;
 	HP = 1000;
 	ATK = 80;
 	DEF = 60;
+}
+void Player::act()
+{
+	if (isOpeningInventory)
+	{
+		if (inventory.size() != 0)
+		{
+			if(Input::KeyDown.clicked)
+				selectItemNumber = (selectItemNumber + 1) % (int)inventory.size();
+			MapData::getInstance().drawInventory(selectItemNumber);
+		}
+		if (Input::KeyI.clicked)
+			closeInventory();
+	}
+	else if (move() || attack())
+	{
+		status = CharacterStatus::EndAction;
+	}
+	else if (Input::KeyI.clicked)
+		openInventory();
 }
 bool Player::move()
 {
@@ -711,18 +738,6 @@ bool Player::attack()
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 	}
 	return true;
-}
-bool Player::useItem()
-{
-	if (Input::KeyI.clicked && inventory.size() != 0)
-	{
-		HP += 50;
-		LogSystem::getInstance().addLog(inventory[0]->getName()+L"を使って体力が増加した。");
-		inventory[0]->use();
-		inventory.erase(inventory.begin());
-		return true;
-	}
-	return false;
 }
 
 //エネミー
@@ -859,7 +874,7 @@ class ShimarinDango :public Item
 public:
 	ShimarinDango(Point pos) :Item(pos)
 	{
-		img = Texture((L"Images/shimarin.png"));
+		img = Texture((L"Images/shimarindango.png"));
 		name = L"しまりんだんご";
 	}
 	ShimarinDango(int x, int y) :ShimarinDango(Point(x, y)) {}
@@ -888,20 +903,12 @@ void Main()
 	MapData::getInstance().registerItem(Glasses(5, 6));
 	MapData::getInstance().registerItem(ShimarinDango(6, 6));
 
-	bool enableSeeInvnentory = true;
 	while (System::Update())
 	{
-		if (Input::KeyShift.clicked)
-			enableSeeInvnentory = !enableSeeInvnentory;
-
 		MapData::getInstance().update();
-		if (enableSeeInvnentory)
-			MapData::getInstance().drawInventory();
-		else
-			MapData::getInstance().drawSubMap();
+
 		MapData::getInstance().drawMainMap();
 		MapData::getInstance().deleteObject();
-
 
 		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddCharacter())
 			MapData::getInstance().registerCharacter(Sandbag(getMouseGrid()));
