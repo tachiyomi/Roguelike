@@ -387,7 +387,7 @@ MapData::MapData()
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
 	mainDrawRange = Size(7, 7);
-	mainGridSize = Size(80, 80);
+	mainGridSize = Size(50, 50);
 	mainOrigin = Point(0, 0);
 	mainDrawSize = mainDrawRange*mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
@@ -503,9 +503,9 @@ void MapData::drawMainMap()
 void MapData::drawSubMap()
 {
 	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
-	for (size_t y = 0; y < mapGrid.width; y++)
+	for (int y = 0; y < (int)mapGrid.width; y++)
 	{
-		for (size_t x = 0; x < mapGrid.height; x++)
+		for (int x = 0; x < (int)mapGrid.height; x++)
 		{
 			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
@@ -528,7 +528,7 @@ void MapData::drawInventory()
 {
 	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
 	for (size_t i = 0; i < characters[0]->getInventory().size(); i++)
-		FontAsset(L"logFont")(L" " + characters[0]->getInventory()[i]->getName() + L" ").draw(0, i * 30).drawFrame(0.0, 1.0, Palette::Gold);
+		FontAsset(L"logFont")(L" " + characters[0]->getInventory()[i]->getName() + L" ").draw(0.0, (double)i * 30).drawFrame(0.0, 1.0, Palette::Gold);
 }
 void MapData::deleteObject()
 {
@@ -616,7 +616,7 @@ void Character::draw()
 
 	const Point drawPosition = GridtoXY(XYtoGrid(xyPosition) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
 	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
-	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().getMainGridSize().x / 2 * cos(Radians(direction)), MapData::getInstance().getMainGridSize().x / 2 * sin(Radians(direction))), 4).draw(Palette::Black);
+	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().getMainGridSize().x / 2 * cos(Radians(direction)), MapData::getInstance().getMainGridSize().x / 2 * sin(Radians(direction))), 2).draw(Palette::Black);
 	
 	FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, MapData::getInstance().getMainGridSize().y / 3 * 0), Palette::Black);
 	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
@@ -883,8 +883,10 @@ void Main()
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
 	MapData::getInstance().registerCharacter(Player(5, 5));
-	MapData::getInstance().registerCharacter(Sandbag(6, 7));
-	MapData::getInstance().registerItem(Glasses(5, 4));
+	MapData::getInstance().registerCharacter(Sandbag(5, 4));
+	MapData::getInstance().registerCharacter(Kyonshih(6, 4));
+	MapData::getInstance().registerItem(Glasses(5, 6));
+	MapData::getInstance().registerItem(ShimarinDango(6, 6));
 
 	bool enableSeeInvnentory = true;
 	while (System::Update())
