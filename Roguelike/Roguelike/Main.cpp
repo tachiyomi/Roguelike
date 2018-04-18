@@ -140,7 +140,7 @@ public:
 	virtual bool enableLive() { return !used; }
 	virtual void doSomethingAtDeath();
 
-	void use() { used = true; }
+	virtual void use() { used = true; }
 
 	void setGridPosition(Point p) { gridPosition = p; }
 	Point getGridPosition() { return gridPosition; }
@@ -412,7 +412,7 @@ void MapData::loadMap()
 			mapGrid[x][y].setTerrain(reader.getOr(y, x, -1));
 		}
 	}
-	LogSystem::getInstance().addLog(L"Map has been loaded.");
+	LogSystem::getInstance().addLog(L"マップが読み込まれました。");
 
 	subGridSize = subDrawSize / std::max((int)mapGrid.height, (int)mapGrid.width);
 }
@@ -644,7 +644,7 @@ Player::Player(Point pos) :Character(pos)
 {
 	img = Texture(L"Images/image.png");
 	color = Palette::Dodgerblue;
-	name = L"Player";
+	name = L"なでしこ";
 	MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 
 	HP = 1000;
@@ -732,7 +732,6 @@ public:
 	Enemy(Point pos) :Character(pos)
 	{
 		color = Palette::Tomato;
-		name = L"Enemy";
 	
 		HP = 100;
 		ATK = 10;
@@ -747,7 +746,7 @@ public:
 	Sandbag(Point pos) :Enemy(pos)
 	{
 		img = Texture((L"Images/sandbag.png"));
-		name = L"Sandbag";
+		name = L"サンドバッグ";
 
 		HP = 900;
 		ATK = 0;
@@ -759,6 +758,9 @@ public:
 };
 bool Sandbag::move()
 {
+	return true;
+
+	/*
 	const Point formerGrid = XYtoGrid(xyPosition);
 	const int formerDirection = direction;
 
@@ -776,6 +778,7 @@ bool Sandbag::move()
 		return true;
 	}
 	return true;
+	*/
 }
 
 class Kyonshih :public Enemy
@@ -784,7 +787,7 @@ public:
 	Kyonshih(Point pos) :Enemy(pos)
 	{
 		img = Texture((L"Images/pop.png"));
-		name = L"Kyonshih";
+		name = L"キョンシーもどき";
 
 		HP = 200;
 		ATK = 40;
@@ -840,10 +843,34 @@ public:
 	Glasses(Point pos) :Item(pos)
 	{
 		img = Texture((L"Images/glasses.png"));
-		name = L"Ogaki's glasses";
+		name = L"誰かのメガネ";
 	}
 	Glasses(int x, int y) :Glasses(Point(x, y)) {}
+
+	void use()override;
 };
+void Glasses::use()
+{
+	used = true;
+}
+
+class ShimarinDango :public Item
+{
+public:
+	ShimarinDango(Point pos) :Item(pos)
+	{
+		img = Texture((L"Images/shimarin.png"));
+		name = L"しまりんだんご";
+	}
+	ShimarinDango(int x, int y) :ShimarinDango(Point(x, y)) {}
+
+	void use()override;
+};
+void ShimarinDango::use()
+{
+	used = true;
+}
+
 
 void Main()
 {
