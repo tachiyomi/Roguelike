@@ -390,8 +390,8 @@ MapData::MapData()
 {
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
-	mainDrawRange = Size(5, 5);
-	mainGridSize = Size(90, 90);
+	mainDrawRange = Size(7, 7);
+	mainGridSize = Size(80, 80);
 	mainOrigin = Point(0, 0);
 	mainDrawSize = mainDrawRange*mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
