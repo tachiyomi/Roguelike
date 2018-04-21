@@ -1,0 +1,161 @@
+#pragma once
+#include <Siv3D.hpp>
+#include <memory>
+#include "function.h"
+
+//アイテム
+class Item
+{
+public:
+	Item(Point);
+	Item(int, int);
+	virtual void draw();
+	virtual bool enableLive() { return !used; }
+	virtual void doSomethingAtDeath();
+
+	virtual void use() { used = true; }
+
+	void setGridPosition(Point p) { gridPosition = p; }
+	Point getGridPosition() { return gridPosition; }
+	String getName() { return name; }
+protected:
+	Texture img;
+	Vec2 xyPosition;
+	Point gridPosition;
+	Color color;
+	String name;
+	bool used;
+};
+
+class Glasses :public Item
+{
+public:
+	Glasses(Point pos) :Item(pos)
+	{
+		img = Texture((L"Images/glasses.png"));
+		name = L"誰かのメガネ";
+	}
+	Glasses(int x, int y) :Glasses(Point(x, y)) {}
+
+	void use()override;
+};
+
+class ShimarinDango :public Item
+{
+public:
+	ShimarinDango(Point pos) :Item(pos)
+	{
+		img = Texture((L"Images/shimarindango.png"));
+		name = L"しまりんだんご";
+	}
+	ShimarinDango(int x, int y) :ShimarinDango(Point(x, y)) {}
+
+	void use()override;
+};
+
+//キャラクター
+enum CharacterStatus
+{
+	WaitKeyInput,
+	Acting,
+	EndAction,
+	WaitOtherAction
+};
+class Character
+{
+public:
+	Character(Point);
+	Character(int, int);
+	virtual void act();
+	virtual void draw();
+	virtual bool move();
+	virtual bool attack();
+	virtual bool enableLive() { return HP > 0; }
+	virtual void doSomethingAtDeath();
+
+	void setGridPosition(Point p) { xyPosition = p; }
+	void setRad(int d) { direction = d; }
+	Point getGridPosition() { return XYtoGrid(xyPosition); }
+	double getRad() { return Radians(direction); }
+	void setStatus(CharacterStatus cs) { status = cs; }
+	CharacterStatus getStatus() { return status; }
+	Array<std::shared_ptr<Item>> getInventory() { return inventory; }
+
+	String getName() { return name; }
+	int causeDamage(int damage) { return HP = damage > HP ? 0 : HP - damage; }
+
+	//void setHP(int h) { HP = h; }
+	//void setATK(int a) { ATK = a; }
+	//void setDEF(int d) { DEF = d; }
+	int getHP() { return HP; }
+	int getATK() { return ATK; }
+	int getDEF() { return DEF; }
+
+protected:
+	Texture img;
+	Point xyPosition;
+	Color color;
+	String name;
+	int direction;
+
+	CharacterStatus status;
+	Array<std::shared_ptr<Item>>inventory;
+	int HP, ATK, DEF;
+};
+//プレイヤー
+class Player :public Character
+{
+public:
+	Player(Point pos);
+	Player(int x, int y) :Player(Point(x, y)) {}
+
+	void act()override;
+	bool move()override;
+	bool attack()override;
+};
+//エネミー
+class Enemy :public Character
+{
+public:
+	Enemy(Point pos) :Character(pos)
+	{
+		color = Palette::Tomato;
+
+		HP = 100;
+		ATK = 10;
+		DEF = 70;
+	}
+	Enemy(int x, int y) :Enemy(Point(x, y)) {}
+};
+class Sandbag :public Enemy
+{
+public:
+	Sandbag(Point pos) :Enemy(pos)
+	{
+		img = Texture((L"Images/sandbag.png"));
+		name = L"サンドバッグ";
+
+		HP = 900;
+		ATK = 0;
+		DEF = 20;
+	}
+	Sandbag(int x, int y) :Sandbag(Point(x, y)) {}
+
+	bool move()override;
+};
+class Kyonshih :public Enemy
+{
+public:
+	Kyonshih(Point pos) :Enemy(pos)
+	{
+		img = Texture((L"Images/pop.png"));
+		name = L"キョンシーもどき";
+
+		HP = 200;
+		ATK = 40;
+		DEF = 40;
+	}
+	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
+
+	bool attack()override;
+};
