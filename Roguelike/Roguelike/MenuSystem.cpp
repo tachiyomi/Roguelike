@@ -26,11 +26,11 @@ void MenuSystem::draw()
 	if (!enableSee)
 		return;
 
-	if (playingCharacter->getInventory().size() != 0)
-	{
-		if (Input::KeyDown.clicked)
-			selectItemNumber = (selectItemNumber + 1) % (int)playingCharacter->getInventory().size();
-	}
+	if (playingCharacter->getInventory().size() == 0)
+		return;
+
+	if (Input::KeyDown.clicked)
+		selectItemNumber = (selectItemNumber + 1) % (int)playingCharacter->getInventory().size();
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);
 	for (size_t i = 0; i < playingCharacter->getInventory().size(); i++)
@@ -39,5 +39,9 @@ void MenuSystem::draw()
 			FontAsset(L"logFont")(L" " + playingCharacter->getInventory()[i]->getName() + L" ").draw(0.0, (double)i * 30).drawFrame(0.0, 1.5, Palette::Gold);
 		else
 			FontAsset(L"logFont")(L" " + playingCharacter->getInventory()[i]->getName() + L" ").draw(0.0, (double)i * 30).drawFrame(0.0, 1.5, Palette::Red);
+	}
+	for (size_t i = 0; i < playingCharacter->getInventory()[selectItemNumber]->getChoice().size(); i++)
+	{
+		FontAsset(L"logFont")(L" " + playingCharacter->getInventory()[selectItemNumber]->getChoice()[i] + L" ").draw(150.0, (double)(i + selectItemNumber) * 30).drawFrame(0.0, 1.5, Palette::Gold);
 	}
 }

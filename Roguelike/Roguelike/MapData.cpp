@@ -54,13 +54,9 @@ void MapData::update()
 	{
 		if (characters[i]->getStatus() == CharacterStatus::WaitKeyInput)
 		{
-			if (Input::KeyShift.clicked)
-			{
-				if (!MenuSystem::getInstance().isOpening())
+			if (Input::KeyShift.clicked && !MenuSystem::getInstance().isOpening())
 					MenuSystem::getInstance().openMenu(characters[i]);
-				else
-					MenuSystem::getInstance().closeMenu();
-			}
+
 			characters[i]->act();
 		}
 		else if (characters[i]->getStatus() == CharacterStatus::EndAction)

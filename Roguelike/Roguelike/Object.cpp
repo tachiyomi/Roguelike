@@ -179,6 +179,7 @@ Item::Item(Point pos)
 	color = Palette::Palegreen;
 	name = L"Item";
 	used = false;
+	choice = Array<String>{ L"H‚×‚é",L"Ì‚Ä‚é" ,L"‘«Œ³‚É’u‚­" };
 }
 Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()

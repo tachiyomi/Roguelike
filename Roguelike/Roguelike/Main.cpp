@@ -23,9 +23,13 @@ void Main()
 
 	while (System::Update())
 	{
-		MapData::getInstance().update();
+		if (!MenuSystem::getInstance().isOpening())
+			MapData::getInstance().update();
+		else if (Input::KeyShift.clicked)
+			MenuSystem::getInstance().closeMenu();
 
 		MapData::getInstance().drawMainMap();
+		
 		MapData::getInstance().drawSubMap();
 		MapData::getInstance().deleteObject();
 

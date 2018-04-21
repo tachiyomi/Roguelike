@@ -18,6 +18,7 @@ public:
 	void setGridPosition(Point p) { gridPosition = p; }
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
+	Array<String> getChoice() { return choice; }
 protected:
 	Texture img;
 	Vec2 xyPosition;
@@ -25,6 +26,7 @@ protected:
 	Color color;
 	String name;
 	bool used;
+	Array<String> choice;
 };
 
 class Glasses :public Item
@@ -39,7 +41,6 @@ public:
 
 	void use()override;
 };
-
 class ShimarinDango :public Item
 {
 public:
