@@ -30,5 +30,5 @@ private:
 	Size menuSize;
 	bool enableSee;
 	std::shared_ptr<Character> playingCharacter;
-	size_t selectItemNumber;
+	Array<size_t> selectChoiceNumber;
 };

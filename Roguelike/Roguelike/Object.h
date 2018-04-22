@@ -1,6 +1,7 @@
 #pragma once
 #include <Siv3D.hpp>
 #include <memory>
+#include "LogSystem.h"
 #include "function.h"
 
 //アイテム
@@ -18,7 +19,38 @@ public:
 	void setGridPosition(Point p) { gridPosition = p; }
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
-	Array<String> getChoice() { return choice; }
+	
+	Array<String> getChoice(Array<size_t> ints)
+	{
+		Array<String> re = Array<String>{};
+		if (ints.size() == 1)
+		{
+			re = Array<String>{ L"func0",L"func1", L"func2" };
+			return re;
+		}
+		else
+		{
+			int i = ints[0];
+			switch (i)
+			{
+				case 0:
+					func0();
+					break;
+				case 1:
+					func1();
+					break;
+				case 2:
+					func2();
+					break;
+			}
+			re.clear();
+			return re;
+		}
+	}
+
+	void func0() { LogSystem::getInstance().addLog(name + L"のfunc0を実行しました。"); }
+	void func1() { LogSystem::getInstance().addLog(name + L"のfunc1を実行しました。"); }
+	void func2() { LogSystem::getInstance().addLog(name + L"のfunc2を実行しました。"); }
 protected:
 	Texture img;
 	Vec2 xyPosition;
@@ -80,7 +112,23 @@ public:
 	double getRad() { return Radians(direction); }
 	void setStatus(CharacterStatus cs) { status = cs; }
 	CharacterStatus getStatus() { return status; }
-	Array<std::shared_ptr<Item>> getInventory() { return inventory; }
+	Array<String> getChoice(Array<size_t> ints)
+	{ 
+		Array<String> re = Array<String>{};
+		if (ints.size() == 1)
+		{
+			for (size_t i = 0; i < inventory.size(); i++)
+				re.emplace_back(inventory[i]->getName());
+			//re = Array<String>{ L"itemA",L"itemB", L"itemC" };
+			return re;
+		}
+		else
+		{
+			int i = ints[0];
+			ints.erase(ints.begin());
+			return inventory[i]->getChoice(ints);
+		}
+	}
 
 	String getName() { return name; }
 	int causeDamage(int damage) { return HP = damage > HP ? 0 : HP - damage; }
