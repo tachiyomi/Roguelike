@@ -1,6 +1,7 @@
 #pragma once
 #include <Siv3D.hpp>
 #include <memory>
+#include "MapData.h"
 #include "LogSystem.h"
 #include "function.h"
 
@@ -11,7 +12,16 @@ public:
 	Item(Point);
 	Item(int, int);
 	virtual void draw();
-	virtual bool enableLive() { return !used; }
+	virtual bool isUsed()
+	{
+		if (!used)
+			return false;
+		else
+		{
+			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteItem();
+			return true;
+		}
+	}
 	virtual void doSomethingAtDeath();
 
 	virtual void use() { used = true; }
@@ -30,6 +40,7 @@ public:
 		}
 		else
 		{
+			use();
 			int i = ints[0];
 			switch (i)
 			{
@@ -53,7 +64,7 @@ public:
 	void func2() { LogSystem::getInstance().addLog(name + L"‚Ìfunc2‚ðŽÀs‚µ‚Ü‚µ‚½B"); }
 protected:
 	Texture img;
-	Vec2 xyPosition;
+	Point xyPosition;
 	Point gridPosition;
 	Color color;
 	String name;
@@ -103,7 +114,16 @@ public:
 	virtual void draw();
 	virtual bool move();
 	virtual bool attack();
-	virtual bool enableLive() { return HP > 0; }
+	virtual bool enableLive() 
+	{ 
+		if (HP > 0)
+			return true;
+		else
+		{
+			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteCharacter();
+			return false;
+		}
+	}
 	virtual void doSomethingAtDeath();
 
 	void setGridPosition(Point p) { xyPosition = p; }
@@ -112,6 +132,14 @@ public:
 	double getRad() { return Radians(direction); }
 	void setStatus(CharacterStatus cs) { status = cs; }
 	CharacterStatus getStatus() { return status; }
+	void deleteItem(size_t i)
+	{
+		if (i < inventory.size())
+		{
+			inventory[i]->doSomethingAtDeath();
+			inventory.erase(inventory.begin() + i - 1);
+		}
+	}
 	Array<String> getChoice(Array<size_t> ints)
 	{ 
 		Array<String> re = Array<String>{};

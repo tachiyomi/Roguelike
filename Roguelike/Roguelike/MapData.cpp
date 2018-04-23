@@ -163,7 +163,6 @@ void MapData::deleteObject()
 	{
 		if (!characters[i]->enableLive())
 		{
-			getOneGridData(characters[i]->getGridPosition()).deleteCharacter();
 			characters[i]->doSomethingAtDeath();
 			characters.erase(characters.begin() + i);
 			i--;
@@ -171,7 +170,7 @@ void MapData::deleteObject()
 	}
 	for (size_t i = 0; i < items.size(); i++)
 	{
-		if (!items[i]->enableLive())
+		if (items[i]->isUsed())
 		{
 			getOneGridData(items[i]->getGridPosition()).deleteItem();
 			items[i]->doSomethingAtDeath();

@@ -39,11 +39,12 @@ void MenuSystem::draw()
 		selectChoiceNumber.emplace_back(0);
 		if (playingCharacter->getChoice(selectChoiceNumber).empty())
 		{
+			if(playingCharacter->get)
 			closeMenu();
 			return;
 		}
 	}
-	if (Input::KeyBackspace.clicked && selectChoiceNumber.size() != 0)
+	if (Input::KeyBackspace.clicked && selectChoiceNumber.size() > 0)
 		selectChoiceNumber.pop_back();
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);
