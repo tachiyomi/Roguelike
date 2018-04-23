@@ -1,7 +1,6 @@
 #pragma once
 #include <Siv3D.hpp>
 #include <memory>
-#include "MapData.h"
 #include "LogSystem.h"
 #include "function.h"
 
@@ -18,7 +17,6 @@ public:
 			return false;
 		else
 		{
-			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteItem();
 			return true;
 		}
 	}
@@ -30,12 +28,12 @@ public:
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
 	
-	Array<String> getChoice(Array<size_t> ints)
+	std::vector<String> getChoice(std::vector<size_t> ints)
 	{
-		Array<String> re = Array<String>{};
+		std::vector<String> re;
 		if (ints.size() == 1)
 		{
-			re = Array<String>{ L"func0",L"func1", L"func2" };
+			re = std::vector<String>{ L"func0",L"func1", L"func2" };
 			return re;
 		}
 		else
@@ -120,7 +118,6 @@ public:
 			return true;
 		else
 		{
-			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteCharacter();
 			return false;
 		}
 	}
@@ -140,14 +137,13 @@ public:
 			inventory.erase(inventory.begin() + i - 1);
 		}
 	}
-	Array<String> getChoice(Array<size_t> ints)
+	std::vector<String> getChoice(std::vector<size_t> ints)
 	{ 
-		Array<String> re = Array<String>{};
+		std::vector<String> re;
 		if (ints.size() == 1)
 		{
 			for (size_t i = 0; i < inventory.size(); i++)
 				re.emplace_back(inventory[i]->getName());
-			//re = Array<String>{ L"itemA",L"itemB", L"itemC" };
 			return re;
 		}
 		else
