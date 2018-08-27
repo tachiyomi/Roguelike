@@ -25,7 +25,7 @@ void Main()
 	{
 		if (!MenuSystem::getInstance().isOpening())
 			MapData::getInstance().update();
-		else if (Input::KeyShift.clicked)
+		else if (Input::KeyShift.clicked || Gamepad(0).button(6).clicked)
 			MenuSystem::getInstance().closeMenu();
 
 		MapData::getInstance().drawMainMap();

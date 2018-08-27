@@ -33,17 +33,19 @@ public:
 		std::vector<String> re;
 		if (ints.size() == 1)
 		{
-			re = std::vector<String>{ L"func0",L"func1", L"func2" };
+			re = std::vector<String>{ L"new choice",L"func1", L"func2" };
 			return re;
 		}
 		else
 		{
-			use();
 			int i = ints[0];
 			switch (i)
 			{
 				case 0:
-					func0();
+					{
+						ints.erase(ints.begin());
+						return getChoice2(ints);
+					}
 					break;
 				case 1:
 					func1();
@@ -57,9 +59,37 @@ public:
 		}
 	}
 
-	void func0() { LogSystem::getInstance().addLog(name + L"のfunc0を実行しました。"); }
-	void func1() { LogSystem::getInstance().addLog(name + L"のfunc1を実行しました。"); }
-	void func2() { LogSystem::getInstance().addLog(name + L"のfunc2を実行しました。"); }
+	std::vector<String> getChoice2(std::vector<size_t> ints)
+	{
+		std::vector<String> re;
+		if (ints.size() == 1)
+		{
+			re = std::vector<String>{ L"func0ww",L"func1ww", L"func2ww" };
+			return re;
+		}
+		else
+		{
+			int i = ints[0];
+			switch (i)
+			{
+			case 0:
+				func0();
+				break;
+			case 1:
+				func1();
+				break;
+			case 2:
+				func2();
+				break;
+			}
+			re.clear();
+			return re;
+		}
+	}
+
+	void func0() { LogSystem::getInstance().addLog(name + L"のfunc0を実行しました。"); use();}
+	void func1() { LogSystem::getInstance().addLog(name + L"のfunc1を実行しました。"); use();}
+	void func2() { LogSystem::getInstance().addLog(name + L"のfunc2を実行しました。"); use();}
 protected:
 	Texture img;
 	Point xyPosition;
@@ -129,12 +159,15 @@ public:
 	double getRad() { return Radians(direction); }
 	void setStatus(CharacterStatus cs) { status = cs; }
 	CharacterStatus getStatus() { return status; }
-	void deleteItem(size_t i)
+	void deleteItem()
 	{
-		if (i < inventory.size())
+		for (size_t i = 0; i < inventory.size(); i++)
 		{
-			inventory[i]->doSomethingAtDeath();
-			inventory.erase(inventory.begin() + i - 1);
+			if (inventory[i]->isUsed())
+			{
+				inventory[i]->doSomethingAtDeath();
+				inventory.erase(inventory.begin() + i);
+			}
 		}
 	}
 	std::vector<String> getChoice(std::vector<size_t> ints)

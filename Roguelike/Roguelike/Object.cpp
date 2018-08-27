@@ -43,6 +43,7 @@ bool Character::attack()
 void Character::doSomethingAtDeath()
 {
 	LogSystem::getInstance().addLog(name + L"を倒しました。");
+	MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteCharacter();
 }
 
 //プレイヤー

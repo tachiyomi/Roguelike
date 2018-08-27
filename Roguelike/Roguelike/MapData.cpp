@@ -101,6 +101,7 @@ void MapData::drawMainMap()
 				getOneGridData(x, y).getCharacter()->draw();
 		}
 	}
+	/*
 	for (int y = startingPos.y; y < endPos.y; y++)
 	{
 		for (int x = startingPos.x; x < endPos.x; x++)
@@ -111,6 +112,7 @@ void MapData::drawMainMap()
 				getOneGridData(x, y).getCharacter()->draw();
 		}
 	}
+	*/
 
 	/*
 	for (size_t i = 0; i < items.size(); i++)
@@ -168,6 +170,8 @@ void MapData::deleteObject()
 			i--;
 		}
 	}
+
+	/*
 	for (size_t i = 0; i < items.size(); i++)
 	{
 		if (items[i]->isUsed())
@@ -178,6 +182,7 @@ void MapData::deleteObject()
 			i--;
 		}
 	}
+	*/
 }
 void MapData::drawOneGridGround(Point p, Size s, int k)
 {
