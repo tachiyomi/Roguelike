@@ -30,9 +30,9 @@ void MenuSystem::draw()
 	if (!enableSee)
 		return;
 
-	if (Input::KeyDown.clicked)
+	if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
 		selectChoiceNumber.back() = (selectChoiceNumber.back() + 1) % (int)playingCharacter->getChoice(selectChoiceNumber).size();
-	if (Input::KeyEnter.clicked)
+	if (Input::KeyEnter.clicked || Gamepad(0).button(1).clicked)
 	{
 		selectChoiceNumber.emplace_back(0);
 		if (playingCharacter->getChoice(selectChoiceNumber).empty())
@@ -41,7 +41,7 @@ void MenuSystem::draw()
 			return;
 		}
 	}
-	if (Input::KeyBackspace.clicked && selectChoiceNumber.size() > 0)
+	if ( (Input::KeyBackspace.clicked || Gamepad(0).button(6).clicked) && selectChoiceNumber.size() > 0)
 		selectChoiceNumber.pop_back();
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);

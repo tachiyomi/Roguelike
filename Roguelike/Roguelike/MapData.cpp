@@ -54,7 +54,7 @@ void MapData::update()
 	{
 		if (characters[i]->getStatus() == CharacterStatus::WaitKeyInput)
 		{
-			if (Input::KeyShift.clicked && !MenuSystem::getInstance().isOpening())
+			if ( (Input::KeyShift.clicked || Gamepad(0).button(7).clicked) && !MenuSystem::getInstance().isOpening())
 					MenuSystem::getInstance().openMenu(characters[i]);
 
 			characters[i]->act();

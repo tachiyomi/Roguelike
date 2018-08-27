@@ -71,23 +71,23 @@ bool Player::move()
 
 	if (Input::KeySpace.clicked)
 	{
-		LogSystem::getInstance().addLog(L"<shima1>‚¤‚¢");
+		LogSystem::getInstance().addLog(L"<shima1>g‚¤‚¢");
 		MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 	}
 
 	bool keyInput = true;
-	if (Input::KeyUp.clicked)
+	if (Input::KeyUp.clicked || Gamepad(0).povForward.clicked)
 		direction = 270;
-	else if (Input::KeyDown.clicked)
+	else if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
 		direction = 90;
-	else if (Input::KeyLeft.clicked)
+	else if (Input::KeyLeft.clicked || Gamepad(0).povLeft.clicked)
 		direction = 180;
-	else if (Input::KeyRight.clicked)
+	else if (Input::KeyRight.clicked || Gamepad(0).povRight.clicked)
 		direction = 0;
 	else
 		keyInput = false;
 
-	if (Input::KeyShift.pressed || !keyInput)
+	if ( (Input::KeyControl.pressed || Gamepad(0).button(3).pressed) || !keyInput)
 		return false;
 
 	Point p(cos(Radians(direction)), sin(Radians(direction)));
@@ -113,7 +113,7 @@ bool Player::move()
 }
 bool Player::attack()
 {
-	if (!Input::KeyEnter.clicked)
+	if (!(Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
 		return false;
 
 	const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(direction)), sin(Radians(direction)));
