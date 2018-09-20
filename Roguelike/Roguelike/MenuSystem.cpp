@@ -4,7 +4,8 @@
 #include <numeric>
 #include "MapData.h"
 #include "LogSystem.h"
-#include "Object.h"
+#include "Character.h"
+#include "Item.h"
 
 MenuSystem::MenuSystem() :
 	menuOrigin(Window::Width() / 2 + 10, 10), 
@@ -36,7 +37,7 @@ void MenuSystem::draw()
 		selectChoiceNumber.back() = (selectChoiceNumber.back() + 1) % (int)playingCharacter->getChoice(selectChoiceNumber).size();
 	if (Input::KeyUp.clicked || Gamepad(0).povForward.clicked)
 		selectChoiceNumber.back() = (selectChoiceNumber.back() + (int)playingCharacter->getChoice(selectChoiceNumber).size() - 1) % (int)playingCharacter->getChoice(selectChoiceNumber).size();
-	if (Input::KeyEnter.clicked || Gamepad(0).button(1).clicked)
+	if ((Input::KeyEnter.clicked || Gamepad(0).button(1).clicked) && (int)playingCharacter->getChoice(selectChoiceNumber).size() > 0)
 	{
 		selectChoiceNumber.emplace_back(0);
 		if (playingCharacter->getChoice(selectChoiceNumber).empty())
@@ -45,7 +46,7 @@ void MenuSystem::draw()
 			return;
 		}
 	}
-	if ( (Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 0)
+	if ( (Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 1)
 		selectChoiceNumber.pop_back();
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);

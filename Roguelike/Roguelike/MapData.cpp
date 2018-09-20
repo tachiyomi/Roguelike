@@ -3,7 +3,7 @@
 #include <typeinfo>
 #include "function.h"
 #include "LogSystem.h"
-#include "Object.h"
+#include "Character.h"
 #include "MenuSystem.h"
 
 MapData::MapData()
@@ -170,19 +170,16 @@ void MapData::deleteObject()
 			i--;
 		}
 	}
-
-	/*
 	for (size_t i = 0; i < items.size(); i++)
 	{
-		if (items[i]->isUsed())
+		if (items[i]->isInInventory())
 		{
 			getOneGridData(items[i]->getGridPosition()).deleteItem();
-			items[i]->doSomethingAtDeath();
+			//items[i]->doSomethingAtDeath();
 			items.erase(items.begin() + i);
 			i--;
 		}
 	}
-	*/
 }
 void MapData::drawOneGridGround(Point p, Size s, int k)
 {

@@ -1,6 +1,7 @@
 #pragma once
 #include <Siv3D.hpp>
-#include "Object.h"
+#include "Character.h"
+#include "Item.h"
 
 class MenuSystem
 {

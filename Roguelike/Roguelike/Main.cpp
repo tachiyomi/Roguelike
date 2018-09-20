@@ -3,7 +3,7 @@
 #include "LogSystem.h"
 #include "MenuSystem.h"
 #include "MapData.h"
-#include "Object.h"
+#include "Character.h"
 
 void Main()
 {
@@ -20,12 +20,13 @@ void Main()
 	MapData::getInstance().registerCharacter(Kyonshih(6, 4));
 	MapData::getInstance().registerItem(Glasses(5, 6));
 	MapData::getInstance().registerItem(ShimarinDango(6, 6));
+	MapData::getInstance().registerItem(Microphone(7, 6));
 
 	while (System::Update())
 	{
 		if (!MenuSystem::getInstance().isOpening())
 			MapData::getInstance().update();
-		else if (Input::KeyShift.clicked || Gamepad(0).button(6).clicked)
+		else if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
 			MenuSystem::getInstance().closeMenu();
 
 		MapData::getInstance().drawMainMap();

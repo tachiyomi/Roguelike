@@ -163,11 +163,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="function.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="LogSystem.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MapData.cpp" />
     <ClCompile Include="MenuSystem.cpp" />
-    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Character.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -283,10 +284,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="LogSystem.h" />
     <ClInclude Include="MapData.h" />
     <ClInclude Include="MenuSystem.h" />
-    <ClInclude Include="Object.h" />
+    <ClInclude Include="Character.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

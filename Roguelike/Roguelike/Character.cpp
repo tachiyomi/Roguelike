@@ -1,4 +1,5 @@
-#include "Object.h"
+#include "Character.h"
+#include "Item.h"
 #include <Siv3D.hpp>
 #include "function.h"
 #include "LogSystem.h"
@@ -72,7 +73,7 @@ bool Player::move()
 
 	if (Input::KeySpace.clicked)
 	{
-		LogSystem::getInstance().addLog(L"<shima1>gうい");
+		LogSystem::getInstance().addLog(L"<shima1>うい");
 		MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 	}
 
@@ -88,7 +89,7 @@ bool Player::move()
 	else
 		keyInput = false;
 
-	if ( (Input::KeyControl.pressed || Gamepad(0).button(3).pressed) || !keyInput)
+	if ( (Input::KeyControl.pressed || Gamepad(0).button(0).pressed) || !keyInput)
 		return false;
 
 	Point p(cos(Radians(direction)), sin(Radians(direction)));
@@ -103,6 +104,7 @@ bool Player::move()
 
 		if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).isUnderItem())
 		{
+			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getItem()->inInventory = true;
 			inventory.emplace_back(MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getItem());
 			LogSystem::getInstance().addLog(MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getItem()->getName() + L"を拾った。");
 			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteItem();
@@ -120,8 +122,8 @@ bool Player::attack()
 	const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(direction)), sin(Radians(direction)));
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 	{
-		const int damage = ATK - MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getDEF();
-		MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->causeDamage(damage);
+		int damage = ATK - MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getDEF();
+		damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 	}
 	return true;
@@ -161,8 +163,8 @@ bool Kyonshih::attack()
 		{
 			if (typeid(*MapData::getInstance().getOneGridData(frontOfMe).getCharacter()) == typeid(Player))
 			{
-				const int damage = 20;
-				MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->causeDamage(damage);
+				int damage = 20;
+				damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
 				LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 				direction = i * 90;
 				return true;
@@ -172,33 +174,3 @@ bool Kyonshih::attack()
 	return true;
 }
 
-//アイテム
-Item::Item(Point pos)
-{
-	gridPosition = pos;
-	xyPosition = GridtoCenterXY(pos);
-	color = Palette::Palegreen;
-	name = L"Item";
-	used = false;
-	choice = Array<String>{ L"食べる",L"捨てる" ,L"足元に置く" };
-}
-Item::Item(int x, int y) :Item(Point(x, y)) {}
-void Item::draw()
-{
-	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw())
-		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
-}
-void Item::doSomethingAtDeath()
-{
-	LogSystem::getInstance().addLog(name + L"は失われた。");
-}
-
-void Glasses::use()
-{
-	used = true;
-}
-
-void ShimarinDango::use()
-{
-	used = true;
-}

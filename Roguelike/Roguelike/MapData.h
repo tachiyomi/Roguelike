@@ -1,7 +1,8 @@
 #pragma once
 #include<Siv3D.hpp>
 #include <memory>
-#include "Object.h"
+#include "Character.h"
+#include "Item.h"
 
 //ˆê‚Â‚ÌƒOƒŠƒbƒh‚Ìî•ñ
 struct GridData
@@ -141,6 +142,9 @@ public:
 	Size getDrawRange() { return mainDrawRange; }
 	Size getMainGridSize() { return mainGridSize; }
 	Size getSubGridSize() { return subGridSize; }
+
+	Array<std::shared_ptr<Character>> getCharacterData() { return characters; }
+	Array<std::shared_ptr<Item>> getItemData() { return items; }
 
 	void setAllGridEnableDraw()
 	{
