@@ -24,21 +24,17 @@ void Main()
 
 	while (System::Update())
 	{
-		if (!MenuSystem::getInstance().isOpening())
-			MapData::getInstance().update();
-		else if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
-			MenuSystem::getInstance().closeMenu();
+		MapData::getInstance().update();
 
 		MapData::getInstance().drawMainMap();
-		
 		MapData::getInstance().drawSubMap();
+		LogSystem::getInstance().displayLog();
+
 		MapData::getInstance().deleteObject();
 
 		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddCharacter())
 			MapData::getInstance().registerCharacter(Sandbag(getMouseGrid()));
 		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddItem())
 			MapData::getInstance().registerItem(Glasses(getMouseGrid()));
-
-		LogSystem::getInstance().displayLog();
 	}
 }

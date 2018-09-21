@@ -131,7 +131,7 @@ protected:
 	int HP, ATK, DEF;
 };
 //プレイヤー
-class Player :public Character
+class Player :public Character, public std::enable_shared_from_this<Player>
 {
 public:
 	Player(Point pos);
@@ -140,6 +140,7 @@ public:
 	void act()override;
 	bool move()override;
 	bool attack()override;
+	bool useInventory();
 };
 //エネミー
 class Enemy :public Character

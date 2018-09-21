@@ -4,6 +4,7 @@
 #include "function.h"
 #include "LogSystem.h"
 #include "MapData.h"
+#include "MenuSystem.h"
 
 //キャラクター
 Character::Character(Point pos)
@@ -61,7 +62,11 @@ Player::Player(Point pos) :Character(pos)
 }
 void Player::act()
 {
-	if (move() || attack())
+	if (MenuSystem::getInstance().isOpening())
+	{
+		useInventory();
+	}
+	else if (move() || attack() || useInventory())
 	{
 		status = CharacterStatus::EndAction;
 	}
@@ -127,6 +132,15 @@ bool Player::attack()
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 	}
 	return true;
+}
+
+bool Player::useInventory()
+{
+	if ((Input::KeyShift.clicked || Gamepad(0).button(7).clicked) && !MenuSystem::getInstance().isOpening())
+		MenuSystem::getInstance().openMenu(shared_from_this());
+	else if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
+		MenuSystem::getInstance().closeMenu();
+	return false;
 }
 
 bool Sandbag::move()

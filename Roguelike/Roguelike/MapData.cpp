@@ -54,8 +54,8 @@ void MapData::update()
 	{
 		if (characters[i]->getStatus() == CharacterStatus::WaitKeyInput)
 		{
-			if ( (Input::KeyShift.clicked || Gamepad(0).button(7).clicked) && !MenuSystem::getInstance().isOpening())
-					MenuSystem::getInstance().openMenu(characters[i]);
+			//if ( (Input::KeyShift.clicked || Gamepad(0).button(7).clicked) && !MenuSystem::getInstance().isOpening())
+			//		MenuSystem::getInstance().openMenu(characters[i]);
 
 			characters[i]->act();
 		}
@@ -218,5 +218,4 @@ void MapData::drawOneGridGround(Point p, Size s, int k)
 		Rect(p, s).draw(Palette::Dimgray).drawFrame(1, 0, Palette::Black);
 		break;
 	}
-
 }

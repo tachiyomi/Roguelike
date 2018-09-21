@@ -32,7 +32,6 @@ void MenuSystem::draw()
 	if (!enableSee)
 		return;
 
-	//Println(selectChoiceNumber);
 	if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
 		selectChoiceNumber.back() = (selectChoiceNumber.back() + 1) % (int)playingCharacter->getChoice(selectChoiceNumber).size();
 	if (Input::KeyUp.clicked || Gamepad(0).povForward.clicked)
