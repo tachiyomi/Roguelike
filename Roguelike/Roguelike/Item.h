@@ -33,7 +33,7 @@ public:
 		}
 		else
 		{
-			int i = ints[0];
+			int i = (size_t)ints[0];
 			switch (i)
 			{
 			case 0:
@@ -111,7 +111,7 @@ public:
 		}
 		else
 		{
-			int i = ints[0];
+			int i = (size_t)ints[0];
 			switch (i)
 			{
 			case 0:

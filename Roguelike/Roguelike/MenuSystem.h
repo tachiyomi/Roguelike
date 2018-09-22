@@ -28,6 +28,7 @@ private:
 	//void operator = (const MenuSystem& obj) {}
 	//MenuSystem(const MenuSystem &obj) {}
 
+	Texture background;
 	Point menuOrigin;
 	Size menuSize;
 	bool enableSee;

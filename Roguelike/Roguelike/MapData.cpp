@@ -54,7 +54,6 @@ void MapData::update()
 	{
 		if (characters[i]->getStatus() == CharacterStatus::WaitKeyInput)
 		{
-			//Println(characters[i]->getStatus());
 			characters[i]->act();
 		}
 		else if (characters[i]->getStatus() == CharacterStatus::EndAction)
