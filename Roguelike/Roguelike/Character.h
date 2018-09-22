@@ -20,8 +20,8 @@ public:
 	Character(int, int);
 	virtual void act();
 	virtual void draw();
-	virtual bool move();
-	virtual bool attack();
+	virtual void move();
+	virtual void attack();
 	virtual bool enableLive() 
 	{ 
 		if (HP > 0)
@@ -138,9 +138,10 @@ public:
 	Player(int x, int y) :Player(Point(x, y)) {}
 
 	void act()override;
-	bool move()override;
-	bool attack()override;
-	bool useInventory();
+	void move()override;
+	void attack()override;
+	void openInventory();
+	void useItem();
 };
 //エネミー
 class Enemy :public Character
@@ -170,7 +171,7 @@ public:
 	}
 	Sandbag(int x, int y) :Sandbag(Point(x, y)) {}
 
-	bool move()override;
+	void move()override;
 };
 class Kyonshih :public Enemy
 {
@@ -186,5 +187,5 @@ public:
 	}
 	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
 
-	bool attack()override;
+	void attack()override;
 };

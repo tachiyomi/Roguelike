@@ -16,10 +16,8 @@ Character::Character(Point pos)
 Character::Character(int x, int y) :Character(Point(x, y)) {}
 void Character::act()
 {
-	if (move() || attack())
-	{
-		status = CharacterStatus::EndAction;
-	}
+	move();
+	attack();
 }
 void Character::draw()
 {
@@ -34,13 +32,11 @@ void Character::draw()
 	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
 	//FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
 }
-bool Character::move()
+void Character::move()
 {
-	return false;
 }
-bool Character::attack()
+void Character::attack()
 {
-	return false;
 }
 void Character::doSomethingAtDeath()
 {
@@ -62,17 +58,20 @@ Player::Player(Point pos) :Character(pos)
 }
 void Player::act()
 {
-	if (MenuSystem::getInstance().isOpening())
+	if (!MenuSystem::getInstance().isOpening())
 	{
-		useInventory();
+		move();
+		attack();
+		openInventory();
 	}
-	else if (move() || attack() || useInventory())
-	{
-		status = CharacterStatus::EndAction;
-	}
+	else
+		useItem();
 }
-bool Player::move()
+void Player::move()
 {
+	if (status != CharacterStatus::WaitKeyInput)
+		return;
+
 	const Point formerGrid = XYtoGrid(xyPosition);
 	const int formerDirection = direction;
 
@@ -95,7 +94,7 @@ bool Player::move()
 		keyInput = false;
 
 	if ( (Input::KeyControl.pressed || Gamepad(0).button(0).pressed) || !keyInput)
-		return false;
+		return;
 
 	Point p(cos(Radians(direction)), sin(Radians(direction)));
 	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + p).enableAddCharacter())
@@ -114,15 +113,16 @@ bool Player::move()
 			LogSystem::getInstance().addLog(MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getItem()->getName() + L"を拾った。");
 			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteItem();
 		}
-
-		return true;
+		status = CharacterStatus::EndAction;
 	}
-	return false;
 }
-bool Player::attack()
+void Player::attack()
 {
+	if (status != CharacterStatus::WaitKeyInput)
+		return;
+
 	if (!(Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
-		return false;
+		return;
 
 	const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(direction)), sin(Radians(direction)));
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
@@ -131,21 +131,31 @@ bool Player::attack()
 		damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 	}
-	return true;
+	status = CharacterStatus::EndAction;
 }
-
-bool Player::useInventory()
+void Player::openInventory()
 {
-	if ((Input::KeyShift.clicked || Gamepad(0).button(7).clicked) && !MenuSystem::getInstance().isOpening())
+	if (status != CharacterStatus::WaitKeyInput)
+		return;
+
+	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
 		MenuSystem::getInstance().openMenu(shared_from_this());
-	else if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
+}
+void Player::useItem()
+{
+	if (status != CharacterStatus::WaitKeyInput)
+		return;
+
+	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
 		MenuSystem::getInstance().closeMenu();
-	return false;
+
+	if(MenuSystem::getInstance().update())
+		status = CharacterStatus::EndAction;
 }
 
-bool Sandbag::move()
+void Sandbag::move()
 {
-	return true;
+	status = CharacterStatus::EndAction;
 
 	/*
 	const Point formerGrid = XYtoGrid(xyPosition);
@@ -168,7 +178,7 @@ bool Sandbag::move()
 	*/
 }
 
-bool Kyonshih::attack()
+void Kyonshih::attack()
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -181,10 +191,11 @@ bool Kyonshih::attack()
 				damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
 				LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 				direction = i * 90;
-				return true;
+				status = CharacterStatus::EndAction;
+				return;
 			}
 		}
 	}
-	return true;
+	status = CharacterStatus::EndAction;
 }
 

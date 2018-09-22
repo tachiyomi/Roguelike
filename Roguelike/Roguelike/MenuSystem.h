@@ -14,6 +14,7 @@ public:
 
 	void openMenu(std::shared_ptr<Character>);
 	void closeMenu();
+	bool update();
 	void draw();
 
 	void setOrigin(Point p) { menuOrigin = p; }

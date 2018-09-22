@@ -27,10 +27,11 @@ void MenuSystem::closeMenu()
 	playingCharacter.reset();
 	enableSee = false;
 }
-void MenuSystem::draw()
+bool MenuSystem::update()
 {
+	//ƒ^[ƒ“Œo‰ß‚³‚¹‚é‚Æ‚«true
 	if (!enableSee)
-		return;
+		return false;
 
 	if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
 		selectChoiceNumber.back() = (selectChoiceNumber.back() + 1) % (int)playingCharacter->getChoice(selectChoiceNumber).size();
@@ -42,11 +43,18 @@ void MenuSystem::draw()
 		if (playingCharacter->getChoice(selectChoiceNumber).empty())
 		{
 			closeMenu();
-			return;
+			return true;
 		}
 	}
-	if ( (Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 1)
+	if ((Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 1)
 		selectChoiceNumber.pop_back();
+
+	return false;
+}
+void MenuSystem::draw()
+{
+	if (!enableSee)
+		return;
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);
 

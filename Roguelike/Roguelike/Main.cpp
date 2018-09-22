@@ -25,12 +25,12 @@ void Main()
 	while (System::Update())
 	{
 		MapData::getInstance().update();
+		MapData::getInstance().deleteObject();
 
 		MapData::getInstance().drawMainMap();
 		MapData::getInstance().drawSubMap();
 		LogSystem::getInstance().displayLog();
 
-		MapData::getInstance().deleteObject();
 
 		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddCharacter())
 			MapData::getInstance().registerCharacter(Sandbag(getMouseGrid()));
