@@ -11,7 +11,7 @@ MapData::MapData()
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
 	mainDrawRange = Size(7, 7);
-	mainGridSize = Size(80, 80);
+	mainGridSize = Size(50, 50);
 	mainOrigin = Point(0, 0);
 	mainDrawSize = mainDrawRange * mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
@@ -54,9 +54,6 @@ void MapData::update()
 	{
 		if (characters[i]->getStatus() == CharacterStatus::WaitKeyInput)
 		{
-			//if ( (Input::KeyShift.clicked || Gamepad(0).button(7).clicked) && !MenuSystem::getInstance().isOpening())
-			//		MenuSystem::getInstance().openMenu(characters[i]);
-
 			characters[i]->act();
 		}
 		else if (characters[i]->getStatus() == CharacterStatus::EndAction)

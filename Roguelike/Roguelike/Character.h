@@ -61,7 +61,7 @@ public:
 		}
 		else
 		{
-			int i = ints[0];
+			int i = (size_t)ints[0];
 			ints.erase(ints.begin());
 			return inventory[i]->getChoice(ints);
 		}

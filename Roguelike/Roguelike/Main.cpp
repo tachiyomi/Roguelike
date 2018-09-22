@@ -13,6 +13,7 @@ void Main()
 	LogSystem::getInstance().setSize(Size(Window::Width(), LogSystem::getInstance().getSize().y));
 
 	FontAsset::Register(L"statusFont", int(MapData::getInstance().getMainGridSize().x / 6.0), Typeface::Medium);
+	FontAsset::Register(L"menuFont", 10, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
 	MapData::getInstance().registerCharacter(Player(5, 5));
