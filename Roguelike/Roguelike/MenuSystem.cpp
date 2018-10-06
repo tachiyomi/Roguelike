@@ -46,14 +46,18 @@ bool MenuSystem::update()
 			if (playingCharacter->getChoice(selectChoiceNumber).empty())
 			{
 				closeMenu();
-				return;
+				return true;
 			}
 		}
 		if ((Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 1)
 			selectChoiceNumber.pop_back();
 	}
-		
-	Rect(menuSize).movedBy(Window::Width() / 2, 0)(background).draw().drawFrame(1.0,0,Palette::Black);
+	return false;
+}
+
+void MenuSystem::draw()
+{
+	Rect(menuSize).movedBy(Window::Width() / 2, 0)(background).draw().drawFrame(1.0, 0, Palette::Black);
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);
 
