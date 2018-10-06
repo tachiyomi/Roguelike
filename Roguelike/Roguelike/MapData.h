@@ -11,9 +11,7 @@ public:
 	GridData() :
 		terrain(-1),
 		enableInvade(false),
-		enableDraw(false),
-		characterPointer(nullptr),
-		itemPointer(nullptr)
+		enableDraw(false)
 	{}
 
 	void setTerrain(int t)
@@ -25,24 +23,24 @@ public:
 	void setEnableDraw(bool b) { enableDraw = b; }
 	void setCharacter(std::shared_ptr<Character> c) { characterPointer = c; }
 	void setItem(std::shared_ptr<Item> i) { itemPointer = i; }
-	void deleteCharacter() { characterPointer = nullptr; }
-	void deleteItem() { itemPointer = nullptr; }
 
 	int getTerrain() { return terrain; }
-	std::shared_ptr<Character> getCharacter() { return characterPointer; }
-	std::shared_ptr<Item>  getItem() { return itemPointer; }
-	bool enableAddCharacter() { return enableInvade && characterPointer == nullptr; }
-	bool enableAddItem() { return enableInvade && itemPointer == nullptr; }
+	std::weak_ptr<Character>&  getWeakCharacter() { return characterPointer; }
+	std::weak_ptr<Item>&  getWeakItem() { return itemPointer; }
+	std::shared_ptr<Character> getCharacter() { return characterPointer.lock(); }
+	std::shared_ptr<Item>  getItem() { return itemPointer.lock(); }
+	bool enableAddCharacter() { return enableInvade && characterPointer.expired(); }
+	bool enableAddItem() { return enableInvade && itemPointer.expired(); }
 	bool canBeDraw() { return enableDraw; }
-	bool isUnderCharacter() { return characterPointer != nullptr; }
-	bool isUnderItem() { return itemPointer != nullptr; }
+	bool isUnderCharacter() { return !characterPointer.expired(); }
+	bool isUnderItem() { return !itemPointer.expired(); }
 
 private:
 	int terrain;
 	bool enableInvade;
 	bool enableDraw;
-	std::shared_ptr<Character> characterPointer;
-	std::shared_ptr<Item> itemPointer;
+	std::weak_ptr<Character> characterPointer;
+	std::weak_ptr<Item> itemPointer;
 };
 
 //全てのグリッドの情報
@@ -94,46 +92,6 @@ public:
 		else
 			return mapGrid[x][y];
 	}
-
-	/*
-	std::shared_ptr<Character> getCharacterPointer(int x, int y)
-	{
-	for (auto& e : characters)
-	{
-	if (e->getGridPosition() == Point(x, y))
-	return e;
-	}
-	return nullptr;
-	}
-	std::shared_ptr<Character> getCharacterPointer(Point p)
-	{
-	for (auto& e : characters)
-	{
-	if (e->getGridPosition() == p)
-	return e;
-	}
-	return nullptr;
-	}
-
-	std::shared_ptr<Item> getItemPointer(int x, int y)
-	{
-	for (auto& e : items)
-	{
-	if (e->getGridPosition() == Point(x, y))
-	return e;
-	}
-	return nullptr;
-	}
-	std::shared_ptr<Item> getItemPointer(Point p)
-	{
-	for (auto& e : items)
-	{
-	if (e->getGridPosition() == p)
-	return e;
-	}
-	return nullptr;
-	}
-	*/
 
 	void setCenterPoint(Point p) { centerGrid = p; }
 	void setDrawRange(Size s) { mainDrawRange = s; }

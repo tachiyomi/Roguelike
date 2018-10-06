@@ -41,7 +41,7 @@ void Character::attack()
 void Character::doSomethingAtDeath()
 {
 	LogSystem::getInstance().addLog(name + L"を倒しました。");
-	MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteCharacter();
+	//MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteCharacter();
 }
 
 //プレイヤー
@@ -102,16 +102,15 @@ void Player::move()
 
 	if (XYtoGrid(xyPosition) != formerGrid)
 	{
-		MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).setCharacter(MapData::getInstance().getOneGridData(formerGrid).getCharacter());
-		MapData::getInstance().getOneGridData(formerGrid).deleteCharacter();
+		MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getWeakCharacter().swap(MapData::getInstance().getOneGridData(formerGrid).getWeakCharacter());
 		MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 
 		if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).isUnderItem())
 		{
 			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getItem()->inInventory = true;
-			inventory.emplace_back(MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getItem());
-			LogSystem::getInstance().addLog(MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getItem()->getName() + L"を拾った。");
-			MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteItem();
+			inventory.push_back(std::weak_ptr<Item>());
+			inventory.back().swap(MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getWeakItem());
+			LogSystem::getInstance().addLog(inventory.back().lock()->getName() + L"を拾った。");
 		}
 		status = CharacterStatus::EndAction;
 	}
@@ -185,7 +184,7 @@ void Kyonshih::attack()
 		const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(i * 90)), sin(Radians(i * 90)));
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
-			if (typeid(*MapData::getInstance().getOneGridData(frontOfMe).getCharacter()) == typeid(Player))
+			if (typeid(MapData::getInstance().getOneGridData(frontOfMe).getCharacter()) == typeid(Player))
 			{
 				int damage = 20;
 				damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);

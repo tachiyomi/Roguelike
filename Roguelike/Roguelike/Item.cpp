@@ -40,7 +40,7 @@ std::vector<String> ShimarinDango::selectTarget(std::vector<size_t> ints)
 	}
 	else
 	{
-		int i = ints[0];
+		int i = (int)ints[0];
 		eat(i);
 		re.clear();
 		return re;
@@ -66,7 +66,7 @@ std::vector<String> Microphone::selectSong(std::vector<size_t> ints)
 	}
 	else
 	{
-		int i = ints[0];
+		int i = (int)ints[0];
 		song(i);
 		re.clear();
 		return re;

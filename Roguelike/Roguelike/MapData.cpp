@@ -83,7 +83,7 @@ void MapData::drawMainMap()
 
 			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
 			{
-				if (typeid(*getOneGridData(x, y).getCharacter()) == typeid(Player))
+				if (typeid(*getOneGridData(x, y).getCharacter().get()) == typeid(Player))
 					k = 10;
 				else
 					k = 20;
@@ -98,31 +98,7 @@ void MapData::drawMainMap()
 				getOneGridData(x, y).getCharacter()->draw();
 		}
 	}
-	/*
-	for (int y = startingPos.y; y < endPos.y; y++)
-	{
-		for (int x = startingPos.x; x < endPos.x; x++)
-		{
-			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
-				getOneGridData(x, y).getItem()->draw();
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
-				getOneGridData(x, y).getCharacter()->draw();
-		}
-	}
-	*/
 
-	/*
-	for (size_t i = 0; i < items.size(); i++)
-	{
-	if (MapData::getInstance().getOneGridData(items[i]->getGridPosition()).canBeDraw())
-	items[i]->draw();
-	}
-	for (size_t i = 0; i < characters.size(); i++)
-	{
-	if (MapData::getInstance().getOneGridData(characters[i]->getGridPosition()).canBeDraw())
-	characters[i]->draw();
-	}
-	*/
 	if (Input::Key0.clicked)
 		ClearPrint();
 }
@@ -145,7 +121,7 @@ void MapData::drawSubMap()
 
 			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
 			{
-				if (typeid(*getOneGridData(x, y).getCharacter()) == typeid(Player))
+				if (typeid(*getOneGridData(x, y).getCharacter().get()) == typeid(Player))
 					k = 100;
 				else
 					k = 200;

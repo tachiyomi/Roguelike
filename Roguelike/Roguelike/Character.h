@@ -44,9 +44,9 @@ public:
 		/*
 		for (size_t i = 0; i < inventory.size(); i++)
 		{
-			if (inventory[i]->isUsed())
+			if (inventory[i].lock()->isUsed())
 			{
-				inventory[i]->doSomethingAtDeath();
+				inventory[i].lock()->doSomethingAtDeath();
 				inventory.erase(inventory.begin() + i);
 			}
 		}
@@ -58,14 +58,14 @@ public:
 		if (ints.size() == 1)
 		{
 			for (size_t i = 0; i < inventory.size(); i++)
-				re.emplace_back(inventory[i]->getName());
+				re.emplace_back(inventory[i].lock()->getName());
 			return re;
 		}
 		else
 		{
-			int i = (size_t)ints[0];
+			int i = (int)ints[0];
 			ints.erase(ints.begin());
-			return inventory[i]->getChoice(ints);
+			return inventory[i].lock()->getChoice(ints);
 		}
 	}
 
@@ -129,7 +129,7 @@ protected:
 	int direction;
 
 	CharacterStatus status;
-	Array<std::shared_ptr<Item>>inventory;
+	Array<std::weak_ptr<Item>>inventory;
 	int HP, ATK, DEF;
 };
 //ÉvÉåÉCÉÑÅ[
