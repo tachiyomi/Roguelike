@@ -15,7 +15,7 @@ public:
 	virtual bool isUsed() { return used; }
 	virtual bool isInInventory() { return inInventory; }
 
-	virtual void doSomethingAtDeath();
+	virtual void doSomethingAtRemoval();
 
 	virtual void use() { used = true; }
 

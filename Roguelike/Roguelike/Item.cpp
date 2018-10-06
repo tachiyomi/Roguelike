@@ -19,12 +19,14 @@ Item::Item(Point pos)
 Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()
 {
-	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw())
+	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw() && !inInventory)
 		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
 }
-void Item::doSomethingAtDeath()
+void Item::doSomethingAtRemoval()
 {
 	LogSystem::getInstance().addLog(name + L"ÇÕé∏ÇÌÇÍÇΩÅB");
+	MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteItem();
+	//if(inInventory)
 }
 
 std::vector<String> ShimarinDango::selectTarget(std::vector<size_t> ints)

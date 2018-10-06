@@ -169,14 +169,14 @@ void MapData::deleteObject()
 	}
 	for (size_t i = 0; i < items.size(); i++)
 	{
-		if (items[i]->isInInventory())
+		if (items[i]->isUsed())
 		{
-			getOneGridData(items[i]->getGridPosition()).deleteItem();
-			//items[i]->doSomethingAtDeath();
+			items[i]->doSomethingAtRemoval();
 			items.erase(items.begin() + i);
 			i--;
 		}
 	}
+	Println(items.size());
 }
 void MapData::drawOneGridGround(Point p, Size s, int k)
 {

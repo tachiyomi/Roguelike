@@ -46,14 +46,18 @@ bool MenuSystem::update()
 			if (playingCharacter->getChoice(selectChoiceNumber).empty())
 			{
 				closeMenu();
-				return;
+				return true;
 			}
 		}
 		if ((Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 1)
 			selectChoiceNumber.pop_back();
 	}
-		
-	Rect(menuSize).movedBy(Window::Width() / 2, 0)(background).draw().drawFrame(1.0,0,Palette::Black);
+	return false;
+}
+
+void MenuSystem::draw()
+{
+	Rect(menuSize).movedBy(Window::Width() / 2, 0)(background).draw().drawFrame(1.0, 0, Palette::Black);
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);
 
@@ -67,8 +71,8 @@ bool MenuSystem::update()
 		for (size_t i = 0; i < playingCharacter->getChoice(ints).size(); i++)
 		{
 			int sum = std::accumulate(ints.begin(), ints.end() - 1, 0);
-			String str = L" " + playingCharacter->getChoice(ints)[i] + L" ";
-			Point point = Point(width, (sum + i) * 25.0);
+			String str = L" " + playingCharacter->getChoice(ints)[i] + L" "; 
+			Point point = Point(width, (sum + i) * (FontAsset(L"menuFont").height + 7));
 			if (i == selectChoiceNumber[k])
 			{
 				FontAsset(L"menuFont")(str).region(point).draw(Palette::Darkslateblue);

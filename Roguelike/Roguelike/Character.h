@@ -41,6 +41,7 @@ public:
 	CharacterStatus getStatus() { return status; }
 	void deleteItem()
 	{
+		/*
 		for (size_t i = 0; i < inventory.size(); i++)
 		{
 			if (inventory[i]->isUsed())
@@ -49,6 +50,7 @@ public:
 				inventory.erase(inventory.begin() + i);
 			}
 		}
+		*/
 	}
 	std::vector<String> getChoice(std::vector<size_t> ints)
 	{ 
