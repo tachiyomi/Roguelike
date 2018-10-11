@@ -25,8 +25,6 @@ void Item::draw()
 void Item::doSomethingAtRemoval()
 {
 	LogSystem::getInstance().addLog(name + L"ÇÕé∏ÇÌÇÍÇΩÅB");
-	MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteItem();
-	//if(inInventory)
 }
 
 std::vector<String> ShimarinDango::selectTarget(std::vector<size_t> ints)

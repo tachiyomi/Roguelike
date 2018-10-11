@@ -41,7 +41,6 @@ void Character::attack()
 void Character::doSomethingAtDeath()
 {
 	LogSystem::getInstance().addLog(name + L"を倒しました。");
-	//MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).deleteCharacter();
 }
 
 //プレイヤー
@@ -58,6 +57,7 @@ Player::Player(Point pos) :Character(pos)
 }
 void Player::act()
 {
+	deleteItem();
 	if (!MenuSystem::getInstance().isOpening())
 	{
 		move();
@@ -138,7 +138,9 @@ void Player::openInventory()
 		return;
 
 	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
+	{
 		MenuSystem::getInstance().openMenu(shared_from_this());
+	}
 }
 void Player::useItem()
 {
@@ -148,7 +150,7 @@ void Player::useItem()
 	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
 		MenuSystem::getInstance().closeMenu();
 
-	if(MenuSystem::getInstance().update())
+	if (MenuSystem::getInstance().update())
 		status = CharacterStatus::EndAction;
 }
 
@@ -184,7 +186,7 @@ void Kyonshih::attack()
 		const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(i * 90)), sin(Radians(i * 90)));
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
-			if (typeid(MapData::getInstance().getOneGridData(frontOfMe).getCharacter()) == typeid(Player))
+			if (typeid(*MapData::getInstance().getOneGridData(frontOfMe).getCharacter().get()) == typeid(Player))
 			{
 				int damage = 20;
 				damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);

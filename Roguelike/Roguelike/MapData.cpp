@@ -152,7 +152,7 @@ void MapData::deleteObject()
 			i--;
 		}
 	}
-	Println(items.size());
+	//Println(items.size());
 }
 void MapData::drawOneGridGround(Point p, Size s, int k)
 {
