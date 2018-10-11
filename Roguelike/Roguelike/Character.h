@@ -13,7 +13,7 @@ enum CharacterStatus
 	EndAction,
 	WaitOtherAction
 };
-class Character
+class Character : public std::enable_shared_from_this<Character>
 {
 public:
 	Character(Point);
@@ -22,6 +22,8 @@ public:
 	virtual void draw();
 	virtual void move();
 	virtual void attack();
+	virtual void skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
+		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB);
 	virtual bool enableLive() 
 	{ 
 		if (HP > 0)
@@ -130,7 +132,7 @@ protected:
 	int HP, ATK, DEF;
 };
 //プレイヤー
-class Player :public Character, public std::enable_shared_from_this<Player>
+class Player :public Character
 {
 public:
 	Player(Point pos);
@@ -141,6 +143,10 @@ public:
 	void attack()override;
 	void openInventory();
 	void useItem();
+
+
+	void skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
+		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB)override;
 };
 //エネミー
 class Enemy :public Character

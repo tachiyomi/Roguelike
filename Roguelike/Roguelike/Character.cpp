@@ -38,6 +38,10 @@ void Character::move()
 void Character::attack()
 {
 }
+void Character::skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B, 
+	std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB)
+{
+}
 void Character::doSomethingAtDeath()
 {
 	LogSystem::getInstance().addLog(name + L"を倒しました。");
@@ -126,9 +130,12 @@ void Player::attack()
 	const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(direction)), sin(Radians(direction)));
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 	{
+		MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
+		/*
 		int damage = ATK - MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getDEF();
 		damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
 		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
+		*/
 	}
 	status = CharacterStatus::EndAction;
 }
@@ -152,6 +159,11 @@ void Player::useItem()
 
 	if (MenuSystem::getInstance().update())
 		status = CharacterStatus::EndAction;
+}
+
+void Player::skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B, std::shared_ptr<Character> copyA, std::shared_ptr<Character> copyB)
+{
+	copyB->decreaseDEF(copyB->getDEF());
 }
 
 void Sandbag::move()
@@ -188,12 +200,15 @@ void Kyonshih::attack()
 		{
 			if (typeid(*MapData::getInstance().getOneGridData(frontOfMe).getCharacter().get()) == typeid(Player))
 			{
+				MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
+				/*
 				int damage = 20;
 				damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
 				LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 				direction = i * 90;
 				status = CharacterStatus::EndAction;
 				return;
+				*/
 			}
 		}
 	}

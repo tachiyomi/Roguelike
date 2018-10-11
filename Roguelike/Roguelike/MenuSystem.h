@@ -12,7 +12,7 @@ public:
 		return menuInstance;
 	}
 
-	void openMenu(std::shared_ptr<Player>);
+	void openMenu(std::shared_ptr<Character>);
 	void closeMenu();
 	bool update();
 	void draw();
@@ -32,6 +32,6 @@ private:
 	Point menuOrigin;
 	Size menuSize;
 	bool enableSee;
-	std::shared_ptr<Player> playingCharacter;
+	std::shared_ptr<Character> playingCharacter;
 	std::vector<size_t> selectChoiceNumber;
 };

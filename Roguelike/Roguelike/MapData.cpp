@@ -65,6 +65,17 @@ void MapData::update()
 		}
 	}
 }
+void MapData::fight(std::shared_ptr<Character> A, std::shared_ptr<Character> B)
+{
+	std::shared_ptr<Character> copyA = std::make_shared<Character>(*A);
+	std::shared_ptr<Character> copyB = std::make_shared<Character>(*B);
+	A->skill(A, B, copyA, copyB);
+	B->skill(A, B, copyA, copyB);
+
+	int damage = copyA->getATK() - copyB->getDEF();
+	damage = B->decreaseHP(damage);
+	LogSystem::getInstance().addLog(A->getName() + L"は" + B->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
+}
 void MapData::drawMainMap()
 {
 	Transformer2D transformer(Mat3x2::Translate(mainOrigin), false);

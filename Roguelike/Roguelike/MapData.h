@@ -53,6 +53,7 @@ public:
 		return Instance;
 	}
 	void update();
+	void fight(std::shared_ptr<Character>, std::shared_ptr<Character>);
 	void drawMainMap();
 	void drawSubMap();
 

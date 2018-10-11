@@ -15,7 +15,7 @@ MenuSystem::MenuSystem() :
 	background = Texture(L"Images/menuBackground.jpg");
 	selectChoiceNumber.emplace_back(0);
 }
-void MenuSystem::openMenu(std::shared_ptr<Player> c)
+void MenuSystem::openMenu(std::shared_ptr<Character> c)
 {
 	playingCharacter = c;
 	enableSee = true;
