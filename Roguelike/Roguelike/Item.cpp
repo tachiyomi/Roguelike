@@ -1,8 +1,4 @@
-#include "Character.h"
 #include "Item.h"
-#include <Siv3D.hpp>
-#include "function.h"
-#include "LogSystem.h"
 #include "MapData.h"
 
 //ƒAƒCƒeƒ€
@@ -20,7 +16,7 @@ Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()
 {
 	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw() && !inInventory)
-		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
+		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 0, color);
 }
 void Item::doSomethingAtRemoval()
 {

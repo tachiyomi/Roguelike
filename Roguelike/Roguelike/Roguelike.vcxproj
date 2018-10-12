@@ -162,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ability.cpp" />
     <ClCompile Include="function.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="LogSystem.cpp" />
@@ -283,6 +284,7 @@
     <Font Include="Example\YomogiFont.ttf" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ability.h" />
     <ClInclude Include="function.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="LogSystem.h" />

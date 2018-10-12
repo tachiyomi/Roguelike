@@ -1,5 +1,4 @@
 #include "MapData.h"
-#include <Siv3D.hpp>
 #include <typeinfo>
 #include "function.h"
 #include "LogSystem.h"
@@ -11,7 +10,7 @@ MapData::MapData()
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
 	mainDrawRange = Size(7, 7);
-	mainGridSize = Size(80, 80);
+	mainGridSize = Size(60, 60);
 	mainOrigin = Point(0, 0);
 	mainDrawSize = mainDrawRange * mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
@@ -65,12 +64,12 @@ void MapData::update()
 		}
 	}
 }
-void MapData::fight(std::shared_ptr<Character> A, std::shared_ptr<Character> B)
+void MapData::fight(const std::shared_ptr<Character>& A, const std::shared_ptr<Character>& B)
 {
 	std::shared_ptr<Character> copyA = std::make_shared<Character>(*A);
 	std::shared_ptr<Character> copyB = std::make_shared<Character>(*B);
-	A->skill(A, B, copyA, copyB);
-	B->skill(A, B, copyA, copyB);
+	A->applyAttackAbility(A, B, copyA, copyB);
+	B->applyDefendAbility(A, B, copyA, copyB);
 
 	int damage = copyA->getATK() - copyB->getDEF();
 	damage = B->decreaseHP(damage);
@@ -163,7 +162,6 @@ void MapData::deleteObject()
 			i--;
 		}
 	}
-	//Println(items.size());
 }
 void MapData::drawOneGridGround(Point p, Size s, int k)
 {

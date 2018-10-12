@@ -1,5 +1,4 @@
 #include "function.h"
-#include <Siv3D.hpp>
 #include "MapData.h"
 
 Point GridtoXY(Point p)

@@ -13,7 +13,7 @@ void Main()
 	LogSystem::getInstance().setSize(Size(Window::Width(), LogSystem::getInstance().getSize().y));
 
 	FontAsset::Register(L"statusFont", int(MapData::getInstance().getMainGridSize().x / 6.0), Typeface::Medium);
-	FontAsset::Register(L"menuFont", 15, Typeface::Medium);
+	FontAsset::Register(L"menuFont", 13, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
 	MapData::getInstance().registerCharacter(Player(5, 5));
@@ -33,9 +33,9 @@ void Main()
 		LogSystem::getInstance().displayLog();
 
 
-		if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddCharacter())
-			MapData::getInstance().registerCharacter(Sandbag(getMouseGrid()));
-		if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddItem())
-			MapData::getInstance().registerItem(Glasses(getMouseGrid()));
+		//if (Input::MouseL.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddCharacter())
+		//	MapData::getInstance().registerCharacter(Sandbag(getMouseGrid()));
+		//if (Input::MouseR.clicked && MapData::getInstance().getOneGridData(getMouseGrid()).enableAddItem())
+		//	MapData::getInstance().registerItem(Glasses(getMouseGrid()));
 	}
 }

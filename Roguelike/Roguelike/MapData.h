@@ -53,7 +53,7 @@ public:
 		return Instance;
 	}
 	void update();
-	void fight(std::shared_ptr<Character>, std::shared_ptr<Character>);
+	void fight(const std::shared_ptr<Character>&, const std::shared_ptr<Character>&);
 	void drawMainMap();
 	void drawSubMap();
 
@@ -68,6 +68,8 @@ public:
 	{
 		characters.emplace_back(std::make_shared<T>(t.getGridPosition()));
 		getOneGridData(t.getGridPosition()).setCharacter(characters.back());
+		//characters.emplace_back(t);
+		//getOneGridData(characters.back()->getGridPosition()).setCharacter(characters.back());
 	}
 
 	template<typename T>

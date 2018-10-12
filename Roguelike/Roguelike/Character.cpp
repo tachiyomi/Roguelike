@@ -1,8 +1,4 @@
 #include "Character.h"
-#include "Item.h"
-#include <Siv3D.hpp>
-#include "function.h"
-#include "LogSystem.h"
 #include "MapData.h"
 #include "MenuSystem.h"
 
@@ -25,7 +21,7 @@ void Character::draw()
 		return;
 
 	const Point drawPosition = GridtoXY(XYtoGrid(xyPosition) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
-	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 1, color);
+	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 0, color);
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().getMainGridSize().x / 2 * cos(Radians(direction)), MapData::getInstance().getMainGridSize().x / 2 * sin(Radians(direction))), 2).draw(Palette::Black);
 
 	FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, MapData::getInstance().getMainGridSize().y / 3 * 0), Palette::Black);
@@ -38,9 +34,23 @@ void Character::move()
 void Character::attack()
 {
 }
-void Character::skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B, 
+void Character::applyAttackAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 	std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB)
 {
+	for (size_t i = 0; i < abilities.size(); i++)
+	{
+		//abilities[i]->whenCombat(A, B, copyA, copyB);
+		abilities[i]->whenAttack(A, B, copyA, copyB);
+	}
+}
+void Character::applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B, 
+	std::shared_ptr<Character> copyA, std::shared_ptr<Character> copyB)
+{
+	for (size_t i = 0; i < abilities.size(); i++)
+	{
+		//abilities[i]->whenCombat(A, B, copyA, copyB);
+		//abilities[i]->whenDefend(A, B, copyA, copyB);
+	}
 }
 void Character::doSomethingAtDeath()
 {
@@ -58,9 +68,12 @@ Player::Player(Point pos) :Character(pos)
 	HP = 1000;
 	ATK = 80;
 	DEF = 60;
+	
+	abilities.emplace_back(std::make_shared<Shout>());
 }
 void Player::act()
 {
+	//Println(abilities.size());
 	deleteItem();
 	if (!MenuSystem::getInstance().isOpening())
 	{
@@ -131,11 +144,6 @@ void Player::attack()
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 	{
 		MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
-		/*
-		int damage = ATK - MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getDEF();
-		damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
-		LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
-		*/
 	}
 	status = CharacterStatus::EndAction;
 }
@@ -159,11 +167,6 @@ void Player::useItem()
 
 	if (MenuSystem::getInstance().update())
 		status = CharacterStatus::EndAction;
-}
-
-void Player::skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B, std::shared_ptr<Character> copyA, std::shared_ptr<Character> copyB)
-{
-	copyB->decreaseDEF(copyB->getDEF());
 }
 
 void Sandbag::move()

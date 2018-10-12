@@ -1,5 +1,4 @@
 #pragma once
-#include "Character.h"
 #include <Siv3D.hpp>
 #include <memory>
 #include "LogSystem.h"

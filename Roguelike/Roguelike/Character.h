@@ -1,5 +1,6 @@
 #pragma once
 #include "Item.h"
+#include "Ability.h"
 #include <Siv3D.hpp>
 #include <memory>
 #include "LogSystem.h"
@@ -22,7 +23,9 @@ public:
 	virtual void draw();
 	virtual void move();
 	virtual void attack();
-	virtual void skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
+	void applyAttackAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
+		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB);
+	void applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB);
 	virtual bool enableLive() 
 	{ 
@@ -113,9 +116,9 @@ public:
 		return i;
 	}
 
-	//void setHP(int h) { HP = h; }
-	//void setATK(int a) { ATK = a; }
-	//void setDEF(int d) { DEF = d; }
+	int setHP(int h) { HP = h; }
+	int setATK(int a) { ATK = a; }
+	int setDEF(int d) { DEF = d; }
 	int getHP() { return HP; }
 	int getATK() { return ATK; }
 	int getDEF() { return DEF; }
@@ -129,6 +132,7 @@ protected:
 
 	CharacterStatus status;
 	Array<std::weak_ptr<Item>>inventory;
+	Array<std::shared_ptr<Ability>>abilities;
 	int HP, ATK, DEF;
 };
 //プレイヤー
@@ -143,10 +147,6 @@ public:
 	void attack()override;
 	void openInventory();
 	void useItem();
-
-
-	void skill(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
-		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB)override;
 };
 //エネミー
 class Enemy :public Character

@@ -1,5 +1,4 @@
 #include "LogSystem.h"
-#include <Siv3D.hpp>
 
 LogSystem::LogSystem() :
 	maxLogSize(20),

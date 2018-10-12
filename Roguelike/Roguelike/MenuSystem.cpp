@@ -1,11 +1,8 @@
 #include"MenuSystem.h"
-#include <Siv3D.hpp>
 #include <memory>
 #include <numeric>
 #include "MapData.h"
 #include "LogSystem.h"
-#include "Character.h"
-#include "Item.h"
 
 MenuSystem::MenuSystem() :
 	menuOrigin(Window::Width() / 2 + 10, 10), 
@@ -19,7 +16,6 @@ void MenuSystem::openMenu(std::shared_ptr<Character> c)
 {
 	playingCharacter = c;
 	enableSee = true;
-	Println(L"Open");
 }
 void MenuSystem::closeMenu()
 {
