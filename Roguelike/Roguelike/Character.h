@@ -23,10 +23,13 @@ public:
 	virtual void draw();
 	virtual void move();
 	virtual void attack();
+	void applyTurnStartAbility();
+	void applyTurnEndAbility();
 	void applyAttackAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB);
 	void applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB);
+	void addAbility(std::shared_ptr<Ability>);
 	virtual bool enableLive() 
 	{ 
 		if (HP > 0)
@@ -44,6 +47,13 @@ public:
 	double getRad() { return Radians(direction); }
 	void setStatus(CharacterStatus cs) { status = cs; }
 	CharacterStatus getStatus() { return status; }
+	Array<String> getAbility()
+	{ 
+		Array<String> strs;
+		for (auto& e : abilities)
+			strs.emplace_back(e->getName());
+		return strs;
+	};
 	void deleteItem()
 	{
 		for (size_t i = 0; i < inventory.size(); i++)
@@ -51,6 +61,18 @@ public:
 			if (inventory[i].expired())
 			{
 				inventory.erase(inventory.begin() + i);
+				i--;
+			}
+		}
+	}
+	void deleteAbility()
+	{
+		for (size_t i = 0; i < abilities.size(); i++)
+		{
+			if (abilities[i]->remove())
+			{
+				abilities.erase(abilities.begin() + i);
+				i--;
 			}
 		}
 	}
@@ -189,6 +211,8 @@ public:
 		HP = 200;
 		ATK = 40;
 		DEF = 40;
+
+		abilities.emplace_back(std::make_shared<MindBreak>());
 	}
 	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
 

@@ -55,7 +55,10 @@ public:
 	void update();
 	void fight(const std::shared_ptr<Character>&, const std::shared_ptr<Character>&);
 	void drawMainMap();
+	void drawSubArea();
+
 	void drawSubMap();
+	void drawAbility();
 
 	void sort() { ; }
 	void deleteObject();
@@ -68,8 +71,6 @@ public:
 	{
 		characters.emplace_back(std::make_shared<T>(t.getGridPosition()));
 		getOneGridData(t.getGridPosition()).setCharacter(characters.back());
-		//characters.emplace_back(t);
-		//getOneGridData(characters.back()->getGridPosition()).setCharacter(characters.back());
 	}
 
 	template<typename T>

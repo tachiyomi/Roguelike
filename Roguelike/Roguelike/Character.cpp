@@ -34,23 +34,40 @@ void Character::move()
 void Character::attack()
 {
 }
+void Character::applyTurnStartAbility()
+{
+	for (size_t i = 0; i < abilities.size(); i++)
+		abilities[i]->turnStart(shared_from_this());
+	deleteAbility();
+}
+void Character::applyTurnEndAbility()
+{
+	for (size_t i = 0; i < abilities.size(); i++)
+		abilities[i]->turnEnd(shared_from_this());
+	deleteAbility();
+}
 void Character::applyAttackAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 	std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB)
 {
-	for (size_t i = 0; i < abilities.size(); i++)
+	for (const auto& e : abilities)
 	{
-		//abilities[i]->whenCombat(A, B, copyA, copyB);
-		abilities[i]->whenAttack(A, B, copyA, copyB);
+		e->whenCombat(A, B, copyA, copyB);
+		e->whenAttack(A, B, copyA, copyB);
 	}
 }
 void Character::applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B, 
 	std::shared_ptr<Character> copyA, std::shared_ptr<Character> copyB)
 {
-	for (size_t i = 0; i < abilities.size(); i++)
+	for (const auto& e : abilities)
 	{
-		//abilities[i]->whenCombat(A, B, copyA, copyB);
-		//abilities[i]->whenDefend(A, B, copyA, copyB);
+		e->whenCombat(A, B, copyA, copyB);
+		e->whenDefend(A, B, copyA, copyB);
 	}
+}
+void Character::addAbility(std::shared_ptr<Ability> ability)
+{
+	abilities.emplace_back(ability);
+	LogSystem::getInstance().addLog(name + L"は" + ability->getName() + L"のアビリティを取得した。");
 }
 void Character::doSomethingAtDeath()
 {
@@ -69,11 +86,10 @@ Player::Player(Point pos) :Character(pos)
 	ATK = 80;
 	DEF = 60;
 	
-	abilities.emplace_back(std::make_shared<Shout>());
+	//abilities.emplace_back(std::make_shared<Shout>());
 }
 void Player::act()
 {
-	//Println(abilities.size());
 	deleteItem();
 	if (!MenuSystem::getInstance().isOpening())
 	{

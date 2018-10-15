@@ -29,7 +29,7 @@ void Main()
 		MapData::getInstance().deleteObject();
 
 		MapData::getInstance().drawMainMap();
-		MapData::getInstance().drawSubMap();
+		MapData::getInstance().drawSubArea();
 		LogSystem::getInstance().displayLog();
 
 

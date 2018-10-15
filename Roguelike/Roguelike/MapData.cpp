@@ -15,6 +15,7 @@ MapData::MapData()
 	mainDrawSize = mainDrawRange * mainGridSize;
 	subOrigin = Point(mainDrawSize.x, 0) + Point::One * 20;
 	subDrawSize = mainDrawSize - Size::One * 40;
+	updateTimer.set(0s);
 }
 void MapData::loadMap()
 {
@@ -45,7 +46,10 @@ void MapData::update()
 	{
 		sort();
 		if (!characters.empty())
+		{
 			characters[0]->setStatus(CharacterStatus::WaitKeyInput);
+			characters[0]->applyTurnStartAbility();
+		}
 		return;
 	}
 
@@ -57,9 +61,23 @@ void MapData::update()
 		}
 		else if (characters[i]->getStatus() == CharacterStatus::EndAction)
 		{
+			if (!updateTimer.isActive())
+			{
+				updateTimer.start();
+				break;
+			}
+			else if (updateTimer.ms() < 1000)
+				break;
+			else
+				updateTimer.set(0s);
+
+			characters[i]->applyTurnEndAbility();
 			characters[i]->setStatus(CharacterStatus::WaitOtherAction);
 			if (i != characters.size() - 1)
+			{
 				characters[i + 1]->setStatus(CharacterStatus::WaitKeyInput);
+				characters[i + 1]->applyTurnStartAbility();
+			}
 			break;
 		}
 	}
@@ -72,6 +90,8 @@ void MapData::fight(const std::shared_ptr<Character>& A, const std::shared_ptr<C
 	B->applyDefendAbility(A, B, copyA, copyB);
 
 	int damage = copyA->getATK() - copyB->getDEF();
+	if (damage < 0)
+		damage = 0;
 	damage = B->decreaseHP(damage);
 	LogSystem::getInstance().addLog(A->getName() + L"は" + B->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 }
@@ -97,6 +117,8 @@ void MapData::drawMainMap()
 					k = 10;
 				else
 					k = 20;
+				if (getOneGridData(x, y).getCharacter()->getStatus() == CharacterStatus::EndAction)
+					k = 60;
 			}
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 30;
@@ -112,7 +134,7 @@ void MapData::drawMainMap()
 	if (Input::Key0.clicked)
 		ClearPrint();
 }
-void MapData::drawSubMap()
+void MapData::drawSubArea()
 {
 	if (MenuSystem::getInstance().isOpening())
 	{
@@ -121,6 +143,10 @@ void MapData::drawSubMap()
 	}
 
 	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
+	drawAbility();
+}
+void MapData::drawSubMap()
+{
 	for (int y = 0; y < (int)mapGrid.width; y++)
 	{
 		for (int x = 0; x < (int)mapGrid.height; x++)
@@ -141,6 +167,12 @@ void MapData::drawSubMap()
 			drawOneGridGround(SubGridtoXY(x, y), subGridSize, k);
 		}
 	}
+}
+void MapData::drawAbility()
+{
+	Array<String> strs = characters[0]->getAbility();
+	for (size_t i = 0; i < strs.size(); i++)
+		FontAsset(L"menuFont")(strs[i]).draw(0, i * 30).drawFrame(0.0, 1.5, Palette::Green);
 }
 void MapData::deleteObject()
 {
@@ -185,6 +217,9 @@ void MapData::drawOneGridGround(Point p, Size s, int k)
 		Rect(p, s).draw(Color(Palette::Mediumspringgreen, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 
+	case 60:
+		Rect(p, s).draw(Color(Palette::Mediumorchid, 100)).drawFrame(1, 0, Palette::Black);
+		break;
 		//subMap
 	case 100:
 		Rect(p, s).draw(Color(Palette::Aqua, 200)).drawFrame(1, 0, Palette::Black);

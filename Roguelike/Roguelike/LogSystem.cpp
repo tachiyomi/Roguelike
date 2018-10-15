@@ -12,10 +12,10 @@ LogSystem::LogSystem() :
 		icon.emplace_back(Format(L"Images/icon_shimarin_{}.png"_fmt, i), Format(L"<shima{}>"_fmt, i), Palette::Royalblue);
 
 	const int iconHeight = 50;
-	for (size_t i = 0; i < icon.size(); i++)
+	for (auto& e : icon)
 	{
-		const double ratio = iconHeight / (double)(icon[i].size.y);
-		icon[i].size = Size((int)(icon[i].size.x*ratio), (int)(icon[i].size.y*ratio));
+		const double ratio = iconHeight / (double)(e.size.y);
+		e.size = Size((int)(e.size.x*ratio), (int)(e.size.y*ratio));
 	}
 }
 void LogSystem::displayLog()
