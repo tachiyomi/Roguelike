@@ -123,6 +123,8 @@ protected:
 	MapData();
 	virtual ~MapData() {}
 private:
+	void operator = (const MapData&) {}
+	MapData(const MapData&) {}
 
 	Grid<GridData> mapGrid;
 	GridData outsideGrid;

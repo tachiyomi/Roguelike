@@ -25,8 +25,8 @@ protected:
 	MenuSystem();
 	virtual ~MenuSystem() {}
 private:
-	//void operator = (const MenuSystem& obj) {}
-	//MenuSystem(const MenuSystem &obj) {}
+	void operator = (const MenuSystem&) {}
+	MenuSystem(const MenuSystem&) {}
 
 	Texture background;
 	Point menuOrigin;

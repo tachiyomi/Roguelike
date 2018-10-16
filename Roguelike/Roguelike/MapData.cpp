@@ -66,7 +66,7 @@ void MapData::update()
 				updateTimer.start();
 				break;
 			}
-			else if (updateTimer.ms() < 1000)
+			else if (updateTimer.ms() < 300)
 				break;
 			else
 				updateTimer.set(0s);

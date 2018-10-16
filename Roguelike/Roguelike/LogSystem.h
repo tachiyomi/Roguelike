@@ -45,8 +45,8 @@ protected:
 	LogSystem();
 	virtual ~LogSystem() {}
 private:
-	//void operator = (const logSystem& obj) {}
-	//logSystem(const logSystem &obj) {}
+	void operator = (const LogSystem&) {}
+	LogSystem(const LogSystem&) {}
 
 	int maxLogSize;
 	Point logOrigin;
