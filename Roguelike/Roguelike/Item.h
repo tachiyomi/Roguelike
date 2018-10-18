@@ -3,6 +3,7 @@
 #include <memory>
 #include "LogSystem.h"
 #include "function.h"
+#include "Ability.h"
 
 //アイテム
 enum ItemType
@@ -29,6 +30,7 @@ public:
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
 	ItemType getType() { return type; }
+	std::shared_ptr<Ability> getAbility() { return std::make_shared<Shout>(); }
 
 	virtual std::vector<String> getChoice(std::vector<size_t> ints)
 	{
@@ -54,40 +56,6 @@ public:
 	void displayErrorMessage() { LogSystem::getInstance().addLog(name + L"の使用選択肢が設定されていません。"); }
 
 	bool inInventory;
-	/*
-	std::vector<String> getChoice2(std::vector<size_t> ints)
-	{
-	std::vector<String> re;
-	if (ints.size() == 1)
-	{
-	re = std::vector<String>{ L"func0ww",L"func1ww", L"func2ww" };
-	return re;
-	}
-	else
-	{
-	int i = ints[0];
-	switch (i)
-	{
-	case 0:
-	func0();
-	break;
-	case 1:
-	func1();
-	break;
-	case 2:
-	func2();
-	break;
-	}
-	re.clear();
-	return re;
-	}
-	}
-
-	void func0() { LogSystem::getInstance().addLog(name + L"のfunc0を実行しました。"); use(); }
-	void func1() { LogSystem::getInstance().addLog(name + L"のfunc1を実行しました。"); use(); }
-	void func2() { LogSystem::getInstance().addLog(name + L"のfunc2を実行しました。"); use(); }
-	*/
-
 protected:
 	Texture img;
 	Point xyPosition;
@@ -230,15 +198,10 @@ public:
 		}
 		else
 		{
-			switch (isEquipped)
-			{
-			case false:
+			if(!isEquipped)
 				equipped();
-				break;
-			case true:
+			else
 				takeout();
-				break;
-			}
 			re.clear();
 			return re;
 		}

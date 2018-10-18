@@ -68,7 +68,7 @@ std::vector<String> Microphone::selectSong(std::vector<size_t> ints)
 }
 void Microphone::song(size_t i)
 {
-	std::shared_ptr<Character> character = MapData::getInstance().getCharacterData()[0];
+	std::shared_ptr<Character> character = MapData::getInstance().getOneGridData(gridPosition).getCharacter();
 	switch (i)
 	{
 		case 0:
@@ -93,7 +93,7 @@ void Microphone::song(size_t i)
 
 void Blade::equipped()
 {
-	MapData::getInstance().getCharacterData()[0]->equipped(shared_from_this());
+	MapData::getInstance().getOneGridData(gridPosition).getCharacter()->equipped(shared_from_this());
 	isEquipped = true;
 	LogSystem::getInstance().addLog(name + L"‚ğ‘•”õ‚µ‚½B");
 	name.append(L"[‘•”õ’†]");
@@ -101,7 +101,7 @@ void Blade::equipped()
 
 void Blade::takeout()
 {
-	MapData::getInstance().getCharacterData()[0]->takeout(shared_from_this());
+	MapData::getInstance().getOneGridData(gridPosition).getCharacter()->takeout(shared_from_this());
 	isEquipped = false;
 	name = name.remove(L"[‘•”õ’†]");
 	LogSystem::getInstance().addLog(name + L"‚ğ‘•”õ‰ğœ‚µ‚½B");

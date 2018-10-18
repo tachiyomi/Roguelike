@@ -66,7 +66,8 @@ void Character::applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr
 }
 void Character::addAbility(std::shared_ptr<Ability> ability)
 {
-	abilities.emplace_back(ability);
+	if (AllOf(abilities, [ability](std::shared_ptr<Ability> a) {return a->getName() != ability->getName(); }))
+		abilities.emplace_back(ability);
 	LogSystem::getInstance().addLog(name + L"は" + ability->getName() + L"のアビリティを取得した。");
 }
 void Character::doSomethingAtDeath()
@@ -85,8 +86,6 @@ Player::Player(Point pos) :Character(pos)
 	HP = 1000;
 	ATK = 80;
 	DEF = 60;
-	
-	//abilities.emplace_back(std::make_shared<Shout>());
 }
 void Player::act()
 {
@@ -145,6 +144,9 @@ void Player::move()
 			inventory.back().swap(MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getWeakItem());
 			LogSystem::getInstance().addLog(inventory.back().lock()->getName() + L"を拾った。");
 		}
+
+		for (auto& e : inventory)
+			e.lock()->setGridPosition(XYtoGrid(xyPosition));
 		status = CharacterStatus::EndAction;
 	}
 }
@@ -218,17 +220,7 @@ void Kyonshih::attack()
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
 			if (typeid(*MapData::getInstance().getOneGridData(frontOfMe).getCharacter().get()) == typeid(Player))
-			{
 				MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
-				/*
-				int damage = 20;
-				damage = MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->decreaseHP(damage);
-				LogSystem::getInstance().addLog(name + L"は" + MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
-				direction = i * 90;
-				status = CharacterStatus::EndAction;
-				return;
-				*/
-			}
 		}
 	}
 	status = CharacterStatus::EndAction;

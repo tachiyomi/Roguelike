@@ -109,6 +109,7 @@ public:
 			accessory = item;
 			break;
 		}
+		addAbility(item->getAbility());
 	};
 
 	void takeout(std::shared_ptr<Item> item)
