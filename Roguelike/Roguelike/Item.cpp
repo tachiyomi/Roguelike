@@ -90,3 +90,19 @@ void Microphone::song(size_t i)
 	}
 	use();
 }
+
+void Blade::equipped()
+{
+	MapData::getInstance().getCharacterData()[0]->equipped(shared_from_this());
+	isEquipped = true;
+	LogSystem::getInstance().addLog(name + L"‚ğ‘•”õ‚µ‚½B");
+	name.append(L"[‘•”õ’†]");
+}
+
+void Blade::takeout()
+{
+	MapData::getInstance().getCharacterData()[0]->takeout(shared_from_this());
+	isEquipped = false;
+	name = name.remove(L"[‘•”õ’†]");
+	LogSystem::getInstance().addLog(name + L"‚ğ‘•”õ‰ğœ‚µ‚½B");
+}

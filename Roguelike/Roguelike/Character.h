@@ -95,6 +95,38 @@ public:
 
 	String getName() { return name; }
 
+	void equipped(std::shared_ptr<Item> item) 
+	{
+		switch (item->getType())
+		{
+		case ItemType::Weapon:
+			weapon = item;
+			break;
+		case ItemType::Armor:
+			armor = item;
+			break;
+		case ItemType::Accessory:
+			accessory = item;
+			break;
+		}
+	};
+
+	void takeout(std::shared_ptr<Item> item)
+	{
+		switch (item->getType())
+		{
+		case ItemType::Weapon:
+			weapon.reset();
+			break;
+		case ItemType::Armor:
+			armor.reset();
+			break;
+		case ItemType::Accessory:
+			accessory.reset();
+			break;
+		}
+	};
+
 	//changeHP
 	int increaseHP(int i)
 	{
@@ -153,6 +185,7 @@ protected:
 	int direction;
 
 	CharacterStatus status;
+	std::weak_ptr<Item>weapon, armor, accessory;
 	Array<std::weak_ptr<Item>>inventory;
 	Array<std::shared_ptr<Ability>>abilities;
 	int HP, ATK, DEF;

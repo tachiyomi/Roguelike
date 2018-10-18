@@ -22,6 +22,7 @@ void Main()
 	MapData::getInstance().registerItem(Glasses(5, 6));
 	MapData::getInstance().registerItem(ShimarinDango(6, 6));
 	MapData::getInstance().registerItem(Microphone(7, 6));
+	MapData::getInstance().registerItem(Blade(5, 7));
 
 	while (System::Update())
 	{

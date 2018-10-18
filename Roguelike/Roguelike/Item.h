@@ -5,7 +5,14 @@
 #include "function.h"
 
 //アイテム
-class Item
+enum ItemType
+{
+	Weapon,
+	Armor,
+	Accessory,
+	Consumables
+};
+class Item : public std::enable_shared_from_this<Item>
 {
 public:
 	Item(Point);
@@ -21,6 +28,7 @@ public:
 	void setGridPosition(Point p) { gridPosition = p; }
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
+	ItemType getType() { return type; }
 
 	virtual std::vector<String> getChoice(std::vector<size_t> ints)
 	{
@@ -88,6 +96,7 @@ protected:
 	String name;
 	bool used;
 	Array<String> choice;
+	ItemType type;
 };
 
 class Glasses :public Item
@@ -97,6 +106,7 @@ public:
 	{
 		img = Texture((L"Images/glasses.png"));
 		name = L"誰かのメガネ";
+		type = ItemType::Consumables;
 	}
 	Glasses(int x, int y) :Glasses(Point(x, y)) {}
 
@@ -141,6 +151,7 @@ public:
 	{
 		img = Texture((L"Images/shimarindango.png"));
 		name = L"しまりんだんご";
+		type = ItemType::Consumables;
 	}
 	ShimarinDango(int x, int y) :ShimarinDango(Point(x, y)) {}
 
@@ -170,6 +181,7 @@ public:
 	{
 		img = Texture((L"Images/microphone.png"));
 		name = L"マイク";
+		type = ItemType::Consumables;
 	}
 	Microphone(int x, int y) :Microphone(Point(x, y)) {}
 
@@ -191,4 +203,48 @@ public:
 	std::vector<String> selectSong(std::vector<size_t>);
 
 	void song(size_t);
+};
+class Blade :public Item
+{
+public:
+	Blade(Point pos) :Item(pos)
+	{
+		img = Texture((L"Images/blade.png"));
+		name = L"ただの剣";
+		type = ItemType::Weapon;
+
+		isEquipped = false;
+	}
+	Blade(int x, int y) :Blade(Point(x, y)) {}
+
+	std::vector<String> getChoice(std::vector<size_t> ints) override
+	{
+		std::vector<String> re;
+		if (ints.size() == 1)
+		{
+			if (!isEquipped)
+				re = std::vector<String>{ L"装備する" };
+			else
+				re = std::vector<String>{ L"装備解除する" };
+			return re;
+		}
+		else
+		{
+			switch (isEquipped)
+			{
+			case false:
+				equipped();
+				break;
+			case true:
+				takeout();
+				break;
+			}
+			re.clear();
+			return re;
+		}
+	}
+	void equipped();
+	void takeout();
+private:
+	bool isEquipped;
 };

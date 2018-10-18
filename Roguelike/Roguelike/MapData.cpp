@@ -172,7 +172,7 @@ void MapData::drawAbility()
 {
 	Array<String> strs = characters[0]->getAbility();
 	for (size_t i = 0; i < strs.size(); i++)
-		FontAsset(L"menuFont")(strs[i]).draw(0, i * 30).drawFrame(0.0, 1.5, Palette::Green);
+		FontAsset(L"menuFont")(strs[i]).draw(0, (double)i * 30).drawFrame(0.0, 1.5, Palette::Green);
 }
 void MapData::deleteObject()
 {
