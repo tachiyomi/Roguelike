@@ -42,12 +42,12 @@ void MapData::loadMap()
 }
 void MapData::update()
 {
-	if (AllOf(characters, [](std::shared_ptr<Character> c) {return c->getStatus() == CharacterStatus::WaitOtherAction; }))
+	if (AllOf(characters, [](std::shared_ptr<Character> c) {return c->getStatus() == ActionStatus::WaitOtherAction; }))
 	{
 		sort();
 		if (!characters.empty())
 		{
-			characters[0]->setStatus(CharacterStatus::WaitKeyInput);
+			characters[0]->setStatus(ActionStatus::WaitKeyInput);
 			characters[0]->applyTurnStartAbility();
 		}
 		return;
@@ -55,11 +55,11 @@ void MapData::update()
 
 	for (size_t i = 0; i < characters.size(); i++)
 	{
-		if (characters[i]->getStatus() == CharacterStatus::WaitKeyInput)
+		if (characters[i]->getStatus() == ActionStatus::WaitKeyInput)
 		{
 			characters[i]->act();
 		}
-		else if (characters[i]->getStatus() == CharacterStatus::EndAction)
+		else if (characters[i]->getStatus() == ActionStatus::EndAction)
 		{
 			if (!updateTimer.isActive())
 			{
@@ -72,10 +72,10 @@ void MapData::update()
 				updateTimer.set(0s);
 
 			characters[i]->applyTurnEndAbility();
-			characters[i]->setStatus(CharacterStatus::WaitOtherAction);
+			characters[i]->setStatus(ActionStatus::WaitOtherAction);
 			if (i != characters.size() - 1)
 			{
-				characters[i + 1]->setStatus(CharacterStatus::WaitKeyInput);
+				characters[i + 1]->setStatus(ActionStatus::WaitKeyInput);
 				characters[i + 1]->applyTurnStartAbility();
 			}
 			break;
@@ -117,7 +117,7 @@ void MapData::drawMainMap()
 					k = 10;
 				else
 					k = 20;
-				if (getOneGridData(x, y).getCharacter()->getStatus() == CharacterStatus::EndAction)
+				if (getOneGridData(x, y).getCharacter()->getStatus() == ActionStatus::EndAction)
 					k = 60;
 			}
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())

@@ -7,12 +7,38 @@
 #include "function.h"
 
 //キャラクター
-enum CharacterStatus
+enum ActionStatus
 {
 	WaitKeyInput,
 	Acting,
 	EndAction,
 	WaitOtherAction
+};
+struct CharacterStatus
+{
+	void setStatus(int h, int a, int d, int mh)
+	{
+		HP = h;
+		baseATK = a;
+		baseDEF = d;
+		baseMaxHP = mh;
+	};
+	/*
+	void setATK(int i) 
+	{
+		exATK -= i;
+		if(exATK)
+	};
+	void setDEF(int i) { return baseDEF + exDEF; };
+	void setHP(int i) { return HP; };
+	*/
+	const int getMaxHP() { return baseMaxHP + exMaxHP; };
+	const int getATK() { return baseATK + exATK; };
+	const int getDEF() { return baseDEF + exDEF; };
+	const int getHP() { return HP; };
+
+	int baseMaxHP, baseATK, baseDEF, HP;
+	int exMaxHP, exATK, exDEF;
 };
 class Character : public std::enable_shared_from_this<Character>
 {
@@ -30,23 +56,15 @@ public:
 	void applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB);
 	void addAbility(std::shared_ptr<Ability>);
-	virtual bool enableLive() 
-	{ 
-		if (HP > 0)
-			return true;
-		else
-		{
-			return false;
-		}
-	}
+	virtual bool enableLive();
 	virtual void doSomethingAtDeath();
 
 	void setGridPosition(Point p) { xyPosition = p; }
 	void setRad(int d) { direction = d; }
 	Point getGridPosition() { return XYtoGrid(xyPosition); }
 	double getRad() { return Radians(direction); }
-	void setStatus(CharacterStatus cs) { status = cs; }
-	CharacterStatus getStatus() { return status; }
+	void setStatus(ActionStatus cs) { AS = cs; }
+	ActionStatus getStatus() { return AS; }
 	Array<String> getAbility()
 	{ 
 		Array<String> strs;
@@ -126,33 +144,43 @@ public:
 			accessory.reset();
 			break;
 		}
+		for (size_t i = 0; i < abilities.size(); i++)
+		{
+			if (abilities[i] == item->getAbility())
+			{
+				abilities.erase(abilities.begin() + i);
+				i--;
+			}
+		}
 	};
 
 	//changeHP
 	int increaseHP(int i)
 	{
-		HP += i;
+		if (i + CS.getHP() > CS.getMaxHP())
+			i = CS.getMaxHP() - CS.getHP();
+		CS.HP += i;
 		return i;
 	}
 	int decreaseHP(int i) 
 	{
-		if (i > HP)
-			i = HP;
-		HP -= i;
+		if (i > CS.getHP())
+			i = CS.getHP();
+		CS.HP -= i;
 		return i;
 	}
 
 	//changeATK
 	int increaseATK(int i)
 	{
-		ATK += i;
+		CS.exATK += i;
 		return i;
 	}
 	int decreaseATK(int i)
 	{
-		if (i > ATK)
-			i = ATK;
-		ATK -= i;
+		if (i > CS.exATK)
+			i = CS.exATK;
+		CS.exATK -= i;
 		return i;
 	}
 
@@ -160,23 +188,24 @@ public:
 
 	int increaseDEF(int i)
 	{
-		DEF += i;
+		CS.exDEF += i;
 		return i;
 	}
 	int decreaseDEF(int i)
 	{
-		if (i > DEF)
-			i = DEF;
-		DEF -= i;
+		if (i > CS.exDEF)
+			i = CS.exDEF;
+		CS.exDEF -= i;
 		return i;
 	}
 
-	int setHP(int h) { HP = h; }
-	int setATK(int a) { ATK = a; }
-	int setDEF(int d) { DEF = d; }
-	int getHP() { return HP; }
-	int getATK() { return ATK; }
-	int getDEF() { return DEF; }
+	int setHP(int h) { CS.HP = h; }
+	int setATK(int a) { CS.baseATK = a; }
+	int setDEF(int d) { CS.baseDEF = d; }
+	const int getHP() { return CS.getHP(); }
+	const int getATK() { return CS.getATK(); }
+	const int getDEF() { return CS.getDEF(); }
+	const int getMaxHP() { return CS.getMaxHP(); }
 
 protected:
 	Texture img;
@@ -185,11 +214,11 @@ protected:
 	String name;
 	int direction;
 
-	CharacterStatus status;
+	ActionStatus AS;
+	CharacterStatus CS;
 	std::weak_ptr<Item>weapon, armor, accessory;
 	Array<std::weak_ptr<Item>>inventory;
 	Array<std::shared_ptr<Ability>>abilities;
-	int HP, ATK, DEF;
 };
 //プレイヤー
 class Player :public Character
@@ -212,9 +241,7 @@ public:
 	{
 		color = Palette::Tomato;
 
-		HP = 100;
-		ATK = 10;
-		DEF = 70;
+		CS.setStatus(100, 10, 70, 100);
 	}
 	Enemy(int x, int y) :Enemy(Point(x, y)) {}
 };
@@ -226,9 +253,7 @@ public:
 		img = Texture((L"Images/sandbag.png"));
 		name = L"サンドバッグ";
 
-		HP = 900;
-		ATK = 0;
-		DEF = 20;
+		CS.setStatus(900, 0, 20, 900);
 	}
 	Sandbag(int x, int y) :Sandbag(Point(x, y)) {}
 
@@ -242,9 +267,7 @@ public:
 		img = Texture((L"Images/pop.png"));
 		name = L"キョンシーもどき";
 
-		HP = 200;
-		ATK = 40;
-		DEF = 40;
+		CS.setStatus(200, 40, 40, 200);
 
 		abilities.emplace_back(std::make_shared<MindBreak>());
 	}

@@ -39,10 +39,16 @@ bool MenuSystem::update()
 		if ((Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
 		{
 			selectChoiceNumber.emplace_back(0);
-			if (playingCharacter->getChoice(selectChoiceNumber).empty())
+			std::vector<s3d::String> str = playingCharacter->getChoice(selectChoiceNumber);
+			if (str.empty())
 			{
 				closeMenu();
 				return true;
+			}
+			else if (str[0] == L"false")
+			{
+				closeMenu();
+				return false;
 			}
 		}
 		if ((Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 1)

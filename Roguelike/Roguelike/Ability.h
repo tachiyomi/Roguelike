@@ -28,6 +28,14 @@ protected:
 	String name;
 };
 
+class IgnoreArmor :public Ability
+{
+public:
+	IgnoreArmor() { name = L"–hŒä–³Ž‹"; };
+	void whenAttack(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
+		std::shared_ptr<Character> copyA, std::shared_ptr<Character> copyB)override;
+};
+
 class Shout :public Ability
 {
 public:

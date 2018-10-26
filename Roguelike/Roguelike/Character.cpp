@@ -7,7 +7,7 @@ Character::Character(Point pos)
 {
 	xyPosition = GridtoCenterXY(pos);
 	direction = 0;
-	status = CharacterStatus::WaitOtherAction;
+	AS = ActionStatus::WaitOtherAction;
 }
 Character::Character(int x, int y) :Character(Point(x, y)) {}
 void Character::act()
@@ -24,7 +24,7 @@ void Character::draw()
 	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 0, color);
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().getMainGridSize().x / 2 * cos(Radians(direction)), MapData::getInstance().getMainGridSize().x / 2 * sin(Radians(direction))), 2).draw(Palette::Black);
 
-	FontAsset(L"statusFont")(L"HP " + ToString(HP)).draw(drawPosition + Point(5, MapData::getInstance().getMainGridSize().y / 3 * 0), Palette::Black);
+	FontAsset(L"statusFont")(L"HP " + ToString(CS.HP)).draw(drawPosition + Point(5, MapData::getInstance().getMainGridSize().y / 3 * 0), Palette::Black);
 	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
 	//FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
 }
@@ -70,6 +70,15 @@ void Character::addAbility(std::shared_ptr<Ability> ability)
 		abilities.emplace_back(ability);
 	LogSystem::getInstance().addLog(name + L"は" + ability->getName() + L"のアビリティを取得した。");
 }
+bool Character::enableLive()
+{
+	{
+		if (CS.HP > 0)
+			return true;
+		else
+			return false;
+	}
+}
 void Character::doSomethingAtDeath()
 {
 	LogSystem::getInstance().addLog(name + L"を倒しました。");
@@ -83,9 +92,7 @@ Player::Player(Point pos) :Character(pos)
 	name = L"なでしこ";
 	MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 
-	HP = 1000;
-	ATK = 80;
-	DEF = 60;
+	CS.setStatus(1000, 80, 60, 1000);
 }
 void Player::act()
 {
@@ -101,7 +108,7 @@ void Player::act()
 }
 void Player::move()
 {
-	if (status != CharacterStatus::WaitKeyInput)
+	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
 	const Point formerGrid = XYtoGrid(xyPosition);
@@ -147,12 +154,12 @@ void Player::move()
 
 		for (auto& e : inventory)
 			e.lock()->setGridPosition(XYtoGrid(xyPosition));
-		status = CharacterStatus::EndAction;
+		AS = ActionStatus::EndAction;
 	}
 }
 void Player::attack()
 {
-	if (status != CharacterStatus::WaitKeyInput)
+	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
 	if (!(Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
@@ -163,11 +170,11 @@ void Player::attack()
 	{
 		MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
 	}
-	status = CharacterStatus::EndAction;
+	AS = ActionStatus::EndAction;
 }
 void Player::openInventory()
 {
-	if (status != CharacterStatus::WaitKeyInput)
+	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
 	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
@@ -177,19 +184,19 @@ void Player::openInventory()
 }
 void Player::useItem()
 {
-	if (status != CharacterStatus::WaitKeyInput)
+	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
 	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
 		MenuSystem::getInstance().closeMenu();
 
 	if (MenuSystem::getInstance().update())
-		status = CharacterStatus::EndAction;
+		AS = ActionStatus::EndAction;
 }
 
 void Sandbag::move()
 {
-	status = CharacterStatus::EndAction;
+	AS = ActionStatus::EndAction;
 
 	/*
 	const Point formerGrid = XYtoGrid(xyPosition);
@@ -223,6 +230,6 @@ void Kyonshih::attack()
 				MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
 		}
 	}
-	status = CharacterStatus::EndAction;
+	AS = ActionStatus::EndAction;
 }
 

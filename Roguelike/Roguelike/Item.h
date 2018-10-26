@@ -30,7 +30,7 @@ public:
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
 	ItemType getType() { return type; }
-	std::shared_ptr<Ability> getAbility() { return std::make_shared<Shout>(); }
+	std::shared_ptr<Ability> getAbility() { return ability; }
 
 	virtual std::vector<String> getChoice(std::vector<size_t> ints)
 	{
@@ -65,6 +65,7 @@ protected:
 	bool used;
 	Array<String> choice;
 	ItemType type;
+	std::shared_ptr<Ability> ability;
 };
 
 class Glasses :public Item
@@ -182,6 +183,7 @@ public:
 		type = ItemType::Weapon;
 
 		isEquipped = false;
+		ability = std::make_shared<Shout>();
 	}
 	Blade(int x, int y) :Blade(Point(x, y)) {}
 
@@ -203,6 +205,7 @@ public:
 			else
 				takeout();
 			re.clear();
+			re.emplace_back(L"false");
 			return re;
 		}
 	}

@@ -33,7 +33,12 @@ void Sleeping::turnStart(std::shared_ptr<Character> A)
 	else
 	{
 		LogSystem::getInstance().addLog(A->getName() + L"‚ÍQ‚Ä‚¢‚Ä“®‚¯‚È‚¢B");
-		A->setStatus(CharacterStatus::EndAction);
+		A->setStatus(ActionStatus::EndAction);
 	}
 	turn--;
+}
+
+void IgnoreArmor::whenAttack(std::shared_ptr<Character> A, std::shared_ptr<Character> B, std::shared_ptr<Character> copyA, std::shared_ptr<Character> copyB)
+{
+	//copyB->
 }
