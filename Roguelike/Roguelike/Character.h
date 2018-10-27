@@ -23,22 +23,57 @@ struct CharacterStatus
 		baseDEF = d;
 		baseMaxHP = mh;
 	};
-	/*
+	void setItemStatus(std::vector<int> i)
+	{
+		if (i.size() < 3)
+			return;
+		exATK += i[0];
+		exDEF += i[1];
+		exMaxHP += i[2];
+	};
+	void deleteItemStatus(std::vector<int> i)
+	{
+		if (i.size() < 3)
+			return;
+		exATK -= i[0];
+		exDEF -= i[1];
+		exMaxHP -= i[2];
+		if (HP > getMaxHP())
+			HP = getMaxHP();
+	}
+	
 	void setATK(int i) 
 	{
-		exATK -= i;
-		if(exATK)
+		exATK -= getATK() - i;
+		if (exATK < 0)
+		{
+			baseATK += exATK;
+			exATK = 0;
+		}
+		if (baseATK < 0)
+			baseATK = 0;
 	};
-	void setDEF(int i) { return baseDEF + exDEF; };
-	void setHP(int i) { return HP; };
-	*/
+	void setDEF(int i)
+	{
+		exDEF -= getDEF() - i;
+		if (exDEF < 0)
+		{
+			baseDEF += exDEF;
+			exDEF = 0;
+		}
+		if (baseDEF < 0)
+			baseDEF = 0;
+			
+	};
+	void setHP(int i) { HP = i; };
+
 	const int getMaxHP() { return baseMaxHP + exMaxHP; };
 	const int getATK() { return baseATK + exATK; };
 	const int getDEF() { return baseDEF + exDEF; };
 	const int getHP() { return HP; };
 
-	int baseMaxHP, baseATK, baseDEF, HP;
-	int exMaxHP, exATK, exDEF;
+	int baseMaxHP = 0, baseATK = 0, baseDEF = 0, HP = 0;
+	int exMaxHP = 0, exATK = 0, exDEF = 0;
 };
 class Character : public std::enable_shared_from_this<Character>
 {
@@ -113,26 +148,59 @@ public:
 
 	String getName() { return name; }
 
-	void equipped(std::shared_ptr<Item> item) 
+	bool isEquipping(ItemType type)
 	{
-		switch (item->getType())
+		switch (type)
 		{
 		case ItemType::Weapon:
-			weapon = item;
+			return !weapon.expired();
+		case ItemType::Armor:
+			return !armor.expired();
+		case ItemType::Accessory:
+			return !accessory.expired();
+		}
+	}
+
+	std::shared_ptr<Equipment> getEquipmentPointer(ItemType type)
+	{
+		switch (type)
+		{
+		case ItemType::Weapon:
+			return weapon.lock();
+		case ItemType::Armor:
+			return armor.lock();
+		case ItemType::Accessory:
+			return accessory.lock();
+		}
+	}
+
+	void equipped(std::shared_ptr<Equipment> eq) 
+	{
+		switch (eq->getType())
+		{
+		case ItemType::Weapon:
+			if (!weapon.expired())
+				weapon.lock()->takeout();
+			weapon = eq;
 			break;
 		case ItemType::Armor:
-			armor = item;
+			if (!armor.expired())
+				armor.lock()->takeout();
+			armor = eq;
 			break;
 		case ItemType::Accessory:
-			accessory = item;
+			if (!accessory.expired())
+				accessory.lock()->takeout();
+			accessory = eq;
 			break;
 		}
-		addAbility(item->getAbility());
+		addAbility(eq->getAbility());
+		CS.setItemStatus(eq->getItemStatus());
 	};
 
-	void takeout(std::shared_ptr<Item> item)
+	void takeout(std::shared_ptr<Equipment> eq)
 	{
-		switch (item->getType())
+		switch (eq->getType())
 		{
 		case ItemType::Weapon:
 			weapon.reset();
@@ -146,12 +214,13 @@ public:
 		}
 		for (size_t i = 0; i < abilities.size(); i++)
 		{
-			if (abilities[i] == item->getAbility())
+			if (abilities[i] == eq->getAbility())
 			{
 				abilities.erase(abilities.begin() + i);
 				i--;
 			}
 		}
+		CS.deleteItemStatus(eq->getItemStatus());
 	};
 
 	//changeHP
@@ -199,9 +268,9 @@ public:
 		return i;
 	}
 
-	int setHP(int h) { CS.HP = h; }
-	int setATK(int a) { CS.baseATK = a; }
-	int setDEF(int d) { CS.baseDEF = d; }
+	void setHP(int h) { CS.setHP(h); }
+	void setATK(int a) { CS.setATK(a); }
+	void setDEF(int d) { CS.setDEF(d); }
 	const int getHP() { return CS.getHP(); }
 	const int getATK() { return CS.getATK(); }
 	const int getDEF() { return CS.getDEF(); }
@@ -216,7 +285,7 @@ protected:
 
 	ActionStatus AS;
 	CharacterStatus CS;
-	std::weak_ptr<Item>weapon, armor, accessory;
+	std::weak_ptr<Equipment>weapon, armor, accessory;
 	Array<std::weak_ptr<Item>>inventory;
 	Array<std::shared_ptr<Ability>>abilities;
 };
@@ -269,7 +338,7 @@ public:
 
 		CS.setStatus(200, 40, 40, 200);
 
-		abilities.emplace_back(std::make_shared<MindBreak>());
+		abilities.emplace_back(std::make_shared<IgnoreArmor>());
 	}
 	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
 

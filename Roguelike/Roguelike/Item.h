@@ -13,7 +13,7 @@ enum ItemType
 	Accessory,
 	Consumables
 };
-class Item : public std::enable_shared_from_this<Item>
+class Item
 {
 public:
 	Item(Point);
@@ -21,7 +21,6 @@ public:
 	virtual void draw();
 	virtual bool isUsed() { return used; }
 	virtual bool isInInventory() { return inInventory; }
-
 	virtual void doSomethingAtRemoval();
 
 	virtual void use() { used = true; }
@@ -30,7 +29,6 @@ public:
 	Point getGridPosition() { return gridPosition; }
 	String getName() { return name; }
 	ItemType getType() { return type; }
-	std::shared_ptr<Ability> getAbility() { return ability; }
 
 	virtual std::vector<String> getChoice(std::vector<size_t> ints)
 	{
@@ -65,9 +63,9 @@ protected:
 	bool used;
 	Array<String> choice;
 	ItemType type;
-	std::shared_ptr<Ability> ability;
 };
 
+//Á–Õ•i
 class Glasses :public Item
 {
 public:
@@ -173,44 +171,67 @@ public:
 
 	void song(size_t);
 };
-class Blade :public Item
+
+//‘•”õ•i
+class Equipment :public Item, std::enable_shared_from_this<Equipment>
 {
 public:
-	Blade(Point pos) :Item(pos)
+	Equipment(Point pos) :Item(pos)
+	{
+		name = L"Equipment";
+		type = ItemType::Weapon;
+		isEquipped = false;
+		itemStatus = std::vector<int>{ 0,0,0 };
+	}
+	Equipment(int x, int y) :Equipment(Point(x, y)) {}
+
+	std::vector<String> getChoice(std::vector<size_t> ints) override;
+	void equipped();
+	void takeout();
+
+	const std::vector<int> getItemStatus() { return itemStatus; }
+	const std::shared_ptr<Ability> getAbility() { return ability; }
+protected:
+	bool isEquipped;
+	std::vector<int> itemStatus;
+	std::shared_ptr<Ability> ability;
+};
+
+class Blade :public Equipment
+{
+public:
+	Blade(Point pos) :Equipment(pos)
 	{
 		img = Texture((L"Images/blade.png"));
 		name = L"‚½‚¾‚ÌŒ•";
 		type = ItemType::Weapon;
-
-		isEquipped = false;
-		ability = std::make_shared<Shout>();
+		itemStatus = { 20,0,0 };
 	}
 	Blade(int x, int y) :Blade(Point(x, y)) {}
+};
 
-	std::vector<String> getChoice(std::vector<size_t> ints) override
+class Shield :public Equipment
+{
+public:
+	Shield(Point pos) :Equipment(pos)
 	{
-		std::vector<String> re;
-		if (ints.size() == 1)
-		{
-			if (!isEquipped)
-				re = std::vector<String>{ L"‘•”õ‚·‚é" };
-			else
-				re = std::vector<String>{ L"‘•”õ‰ğœ‚·‚é" };
-			return re;
-		}
-		else
-		{
-			if(!isEquipped)
-				equipped();
-			else
-				takeout();
-			re.clear();
-			re.emplace_back(L"false");
-			return re;
-		}
+		img = Texture((L"Images/shield.png"));
+		name = L"‚½‚¾‚Ì‚";
+		type = ItemType::Armor;
+		itemStatus = { 0,20,0 };
 	}
-	void equipped();
-	void takeout();
-private:
-	bool isEquipped;
+	Shield(int x, int y) :Shield(Point(x, y)) {}
+};
+
+class Ring :public Equipment
+{
+public:
+	Ring(Point pos) :Equipment(pos)
+	{
+		img = Texture((L"Images/ring.png"));
+		name = L"‚½‚¾‚Ìw—Ö";
+		type = ItemType::Accessory;
+		itemStatus = { 0,0,100 };
+	}
+	Ring(int x, int y) :Ring(Point(x, y)) {}
 };

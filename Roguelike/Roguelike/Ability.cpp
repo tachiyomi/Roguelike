@@ -40,5 +40,5 @@ void Sleeping::turnStart(std::shared_ptr<Character> A)
 
 void IgnoreArmor::whenAttack(std::shared_ptr<Character> A, std::shared_ptr<Character> B, std::shared_ptr<Character> copyA, std::shared_ptr<Character> copyB)
 {
-	//copyB->
+	copyB->setDEF(0);
 }

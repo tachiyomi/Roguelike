@@ -91,7 +91,35 @@ void Microphone::song(size_t i)
 	use();
 }
 
-void Blade::equipped()
+std::vector<String> Equipment::getChoice(std::vector<size_t> ints)
+{
+	std::vector<String> re;
+	if (ints.size() == 1)
+	{
+		if (!isEquipped)
+		{
+			if (MapData::getInstance().getOneGridData(gridPosition).getCharacter()->isEquipping(type))
+				re = std::vector<String>{ MapData::getInstance().getOneGridData(gridPosition).getCharacter()->getEquipmentPointer(type)->getName().remove(L"[‘•”õ’†]") + L"‚©‚ç‘•”õ•ÏX‚·‚é" };
+			else
+				re = std::vector<String>{ L"‘•”õ‚·‚é" };
+		}
+		else
+			re = std::vector<String>{ L"‘•”õ‰ğœ‚·‚é" };
+		return re;
+	}
+	else
+	{
+		if (!isEquipped)
+			equipped();
+		else
+			takeout();
+		re.clear();
+		re.emplace_back(L"false");
+		return re;
+	}
+}
+
+void Equipment::equipped()
 {
 	MapData::getInstance().getOneGridData(gridPosition).getCharacter()->equipped(shared_from_this());
 	isEquipped = true;
@@ -99,7 +127,7 @@ void Blade::equipped()
 	name.append(L"[‘•”õ’†]");
 }
 
-void Blade::takeout()
+void Equipment::takeout()
 {
 	MapData::getInstance().getOneGridData(gridPosition).getCharacter()->takeout(shared_from_this());
 	isEquipped = false;

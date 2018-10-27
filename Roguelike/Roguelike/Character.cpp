@@ -24,9 +24,10 @@ void Character::draw()
 	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 0, color);
 	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().getMainGridSize().x / 2 * cos(Radians(direction)), MapData::getInstance().getMainGridSize().x / 2 * sin(Radians(direction))), 2).draw(Palette::Black);
 
-	FontAsset(L"statusFont")(L"HP " + ToString(CS.HP)).draw(drawPosition + Point(5, MapData::getInstance().getMainGridSize().y / 3 * 0), Palette::Black);
-	//FontAsset(L"statusFont")(L"ATK " + ToString(ATK)).draw(drawPosition + Point(5, gridSize.y / 3 * 1), Palette::Black);
-	//FontAsset(L"statusFont")(L"DEF " + ToString(DEF)).draw(drawPosition + Point(5, gridSize.y / 3 * 2), Palette::Black);
+	Color c = Palette::Black;
+	FontAsset(L"statusFont")(ToString(CS.getHP())+L"/"+ ToString(CS.getMaxHP())).draw(drawPosition + Point(3,0), c);
+	FontAsset(L"statusFont")(L"[A]" + ToString(CS.getATK())).draw(drawPosition + Point(3, MapData::getInstance().getMainGridSize().y / 3 * 1), c);
+	FontAsset(L"statusFont")(L"[D]" + ToString(CS.getDEF())).draw(drawPosition + Point(3, MapData::getInstance().getMainGridSize().y / 3 * 2), c);
 }
 void Character::move()
 {
@@ -66,6 +67,9 @@ void Character::applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr
 }
 void Character::addAbility(std::shared_ptr<Ability> ability)
 {
+	if (ability == nullptr)
+		return;
+
 	if (AllOf(abilities, [ability](std::shared_ptr<Ability> a) {return a->getName() != ability->getName(); }))
 		abilities.emplace_back(ability);
 	LogSystem::getInstance().addLog(name + L"は" + ability->getName() + L"のアビリティを取得した。");

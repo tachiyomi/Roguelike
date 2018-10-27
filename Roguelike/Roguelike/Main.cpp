@@ -12,7 +12,7 @@ void Main()
 	LogSystem::getInstance().setOrigin(Point(0, Window::Height() - LogSystem::getInstance().getSize().y));
 	LogSystem::getInstance().setSize(Size(Window::Width(), LogSystem::getInstance().getSize().y));
 
-	FontAsset::Register(L"statusFont", int(MapData::getInstance().getMainGridSize().x / 6.0), Typeface::Medium);
+	FontAsset::Register(L"statusFont", int(MapData::getInstance().getMainGridSize().x / 8.0), Typeface::Heavy);
 	FontAsset::Register(L"menuFont", 13, Typeface::Medium);
 	FontAsset::Register(L"logFont", 12, Typeface::Bold);
 
@@ -23,6 +23,11 @@ void Main()
 	MapData::getInstance().registerItem(ShimarinDango(6, 6));
 	MapData::getInstance().registerItem(Microphone(7, 6));
 	MapData::getInstance().registerItem(Blade(5, 7));
+	MapData::getInstance().registerItem(Shield(6, 7));
+	MapData::getInstance().registerItem(Ring(7, 7));
+	MapData::getInstance().registerItem(Blade(5, 8));
+	MapData::getInstance().registerItem(Shield(6, 8));
+	MapData::getInstance().registerItem(Ring(7, 8));
 
 	while (System::Update())
 	{
