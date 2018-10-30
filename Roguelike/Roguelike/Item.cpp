@@ -1,5 +1,6 @@
 #include "Item.h"
 #include "MapData.h"
+#include "DungeonSystem.h"
 
 //アイテム
 Item::Item(Point pos)
@@ -133,4 +134,9 @@ void Equipment::takeout()
 	isEquipped = false;
 	name = name.remove(L"[装備中]");
 	LogSystem::getInstance().addLog(name + L"を装備解除した。");
+}
+
+void GemOfFly::goNext()
+{
+	DungeonSystem::getInstance().shiftNextFloor();
 }

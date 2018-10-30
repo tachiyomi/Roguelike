@@ -163,6 +163,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Ability.cpp" />
+    <ClCompile Include="DungeonSystem.cpp" />
     <ClCompile Include="function.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="LogSystem.cpp" />
@@ -285,6 +286,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ability.h" />
+    <ClInclude Include="DungeonSystem.h" />
     <ClInclude Include="function.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="LogSystem.h" />

@@ -63,7 +63,7 @@ public:
 	void sort() { ; }
 	void deleteObject();
 
-	void loadMap();
+	void loadMap(int);
 	void drawOneGridGround(Point, Size, int);
 
 	template<typename T>

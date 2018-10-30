@@ -159,6 +159,7 @@ public:
 		case ItemType::Accessory:
 			return !accessory.expired();
 		}
+		return false;
 	}
 
 	std::shared_ptr<Equipment> getEquipmentPointer(ItemType type)
@@ -172,6 +173,7 @@ public:
 		case ItemType::Accessory:
 			return accessory.lock();
 		}
+		return nullptr;
 	}
 
 	void equipped(std::shared_ptr<Equipment> eq) 

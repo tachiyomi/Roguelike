@@ -17,9 +17,9 @@ MapData::MapData()
 	subDrawSize = mainDrawSize - Size::One * 40;
 	updateTimer.set(0s);
 }
-void MapData::loadMap()
+void MapData::loadMap(int i)
 {
-	const CSVReader reader(L"Csvs/data.csv");
+	const CSVReader reader(L"Csvs/data" + ToString(i) + L".csv");
 
 	if (!reader)
 		return;
@@ -27,6 +27,7 @@ void MapData::loadMap()
 	const size_t width = reader.columns(0);
 	const size_t height = reader.rows;
 
+	mapGrid.clear();
 	mapGrid = Grid<GridData>(height, width);
 
 	for (size_t y = 0; y < height; y++)

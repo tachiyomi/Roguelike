@@ -171,6 +171,36 @@ public:
 
 	void song(size_t);
 };
+class GemOfFly :public Item
+{
+public:
+	GemOfFly(Point pos) :Item(pos)
+	{
+		img = Texture((L"Images/microphone.png"));
+		name = L"¦‚¢‹Ê";
+		type = ItemType::Consumables;
+	}
+	GemOfFly(int x, int y) :GemOfFly(Point(x, y)) {}
+
+	std::vector<String> getChoice(std::vector<size_t> ints) override
+	{
+		std::vector<String> re;
+		if (ints.size() == 1)
+		{
+			re = std::vector<String>{ L"Ÿ‚ÌŠK‘w‚Ös‚­" };
+			return re;
+		}
+		else
+		{
+			ints.erase(ints.begin());
+			goNext();
+			re.clear();
+			return re;
+		}
+	}
+
+	void goNext();
+};
 
 //‘•”õ•i
 class Equipment :public Item, std::enable_shared_from_this<Equipment>
