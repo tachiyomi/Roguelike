@@ -6,7 +6,7 @@
 
 MenuSystem::MenuSystem() :
 	menuOrigin(Window::Width() / 2 + 10, 10), 
-	menuSize(Window::Width() / 2, Window::Height() - LogSystem::getInstance().getSize().y), 
+	menuSize(Window::Width() / 2,Window::Width() / 2 -100),
 	enableSee(false)
 {
 	background = Texture(L"Images/menuBackground.jpg");
@@ -59,9 +59,9 @@ bool MenuSystem::update()
 
 void MenuSystem::draw()
 {
-	Rect(menuSize).movedBy(Window::Width() / 2, 0)(background).draw(Palette::Silver).drawFrame(1.0, 0, Palette::Black);
+	Rect(menuSize).movedBy(menuOrigin)(background).draw(Color(Palette::Silver,100)).drawFrame(1.0, 0, Palette::Black);
 
-	Transformer2D transformer(Mat3x2::Translate(menuOrigin), false);
+	Transformer2D transformer(Mat3x2::Translate(menuOrigin + Point::One * 10), false);
 
 	int k = 0;
 	double w = 0;

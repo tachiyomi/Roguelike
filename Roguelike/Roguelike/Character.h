@@ -146,6 +146,7 @@ public:
 		}
 	}
 
+	Array<std::weak_ptr<Item>> getInventory() { return inventory; }
 	String getName() { return name; }
 
 	bool isEquipping(ItemType type)
@@ -278,13 +279,14 @@ public:
 	const int getDEF() { return CS.getDEF(); }
 	const int getMaxHP() { return CS.getMaxHP(); }
 
+	static const int getid() { return 0; }
+	static const int id = 0;
 protected:
 	Texture img;
 	Point xyPosition;
 	Color color;
 	String name;
 	int direction;
-
 	ActionStatus AS;
 	CharacterStatus CS;
 	std::weak_ptr<Equipment>weapon, armor, accessory;
@@ -303,6 +305,9 @@ public:
 	void attack()override;
 	void openInventory();
 	void useItem();
+
+	static const int getid() { return 1; }
+	static const int id = 1;
 };
 //エネミー
 class Enemy :public Character
@@ -311,10 +316,11 @@ public:
 	Enemy(Point pos) :Character(pos)
 	{
 		color = Palette::Tomato;
-
 		CS.setStatus(100, 10, 70, 100);
 	}
 	Enemy(int x, int y) :Enemy(Point(x, y)) {}
+
+	static const int id = 10;
 };
 class Sandbag :public Enemy
 {
@@ -329,6 +335,8 @@ public:
 	Sandbag(int x, int y) :Sandbag(Point(x, y)) {}
 
 	void move()override;
+
+	static const int id = 11;
 };
 class Kyonshih :public Enemy
 {
@@ -345,4 +353,6 @@ public:
 	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
 
 	void attack()override;
+
+	static const int id = 0;
 };

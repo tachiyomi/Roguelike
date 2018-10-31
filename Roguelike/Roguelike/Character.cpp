@@ -3,7 +3,7 @@
 #include "MenuSystem.h"
 
 //キャラクター
-Character::Character(Point pos)
+Character::Character(Point pos) 
 {
 	xyPosition = GridtoCenterXY(pos);
 	direction = 0;
@@ -230,7 +230,7 @@ void Kyonshih::attack()
 		const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(i * 90)), sin(Radians(i * 90)));
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
-			if (typeid(*MapData::getInstance().getOneGridData(frontOfMe).getCharacter().get()) == typeid(Player))
+			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter().get()->id == Player::id)
 				MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
 		}
 	}

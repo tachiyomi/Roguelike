@@ -20,6 +20,7 @@ void DungeonSystem::draw()
 
 void DungeonSystem::shiftNextFloor()
 {
+	MapData::getInstance().deleteExceptPlayer();
 	floorNumber++;
 	MapData::getInstance().loadMap(floorNumber);
 }
@@ -27,6 +28,8 @@ void DungeonSystem::shiftNextFloor()
 DungeonSystem::DungeonSystem():
 	floorNumber(1)
 {
+	MapData::getInstance().loadMap(floorNumber);
+	/*
 	MapData::getInstance().loadMap(floorNumber);
 	MapData::getInstance().registerCharacter(Player(5, 5));
 	MapData::getInstance().registerCharacter(Sandbag(5, 4));
@@ -38,4 +41,5 @@ DungeonSystem::DungeonSystem():
 	MapData::getInstance().registerItem(Shield(6, 7));
 	MapData::getInstance().registerItem(Ring(7, 7));
 	MapData::getInstance().registerItem(GemOfFly(5, 8));
+	*/
 }

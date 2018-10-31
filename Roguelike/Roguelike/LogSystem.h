@@ -37,7 +37,8 @@ public:
 
 	void displayLog();
 	void addLog(String);
-
+	
+	Point getOrigin() { return logOrigin; }
 	void setOrigin(Point p) { logOrigin = p; }
 	void setSize(Size s) { logSize = s; }
 	const Size getSize() { return logSize; }

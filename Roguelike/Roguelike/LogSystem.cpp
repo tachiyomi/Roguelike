@@ -2,8 +2,8 @@
 
 LogSystem::LogSystem() :
 	maxLogSize(20),
-	logOrigin(0, Window::Height()),
-	logSize(Window::Width(), 180)
+	logOrigin(720,300),
+	logSize(200, 260)
 {
 	for (int i = 1; i <= 5; i++)
 		icon.emplace_back(Format(L"Images/icon_nadeshiko_{}.png"_fmt, i), Format(L"<nade{}>"_fmt, i), Palette::Pink);

@@ -62,8 +62,10 @@ public:
 
 	void sort() { ; }
 	void deleteObject();
+	void deleteExceptPlayer();
 
 	void loadMap(int);
+	void setupOneGrid(GridData&, String, Point);
 	void drawOneGridGround(Point, Size, int);
 
 	template<typename T>
@@ -105,8 +107,17 @@ public:
 	Size getMainGridSize() { return mainGridSize; }
 	Size getSubGridSize() { return subGridSize; }
 
-	Array<std::shared_ptr<Character>> getCharacterData() { return characters; }
-	Array<std::shared_ptr<Item>> getItemData() { return items; }
+	Array<std::shared_ptr<Character>> getCharacterArray(int i) 
+	{
+		Array<std::shared_ptr<Character>> re;
+		for (auto e : characters)
+		{
+			if (e.get()->getid()== i)
+				re.emplace_back(e);
+		}
+		return re;
+	}
+	Array<std::shared_ptr<Item>> getItemArray() { return items; }
 
 	void setAllGridEnableDraw()
 	{
