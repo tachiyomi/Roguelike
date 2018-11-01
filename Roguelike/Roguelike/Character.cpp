@@ -91,10 +91,10 @@ void Character::doSomethingAtDeath()
 //ƒvƒŒƒCƒ„[
 Player::Player(Point pos) :Character(pos)
 {
+	id = CharacterId::player;
 	img = Texture(L"Images/image.png");
 	color = Palette::Dodgerblue;
 	name = L"‚È‚Å‚µ‚±";
-	MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 
 	CS.setStatus(1000, 80, 60, 1000);
 }
@@ -201,7 +201,6 @@ void Player::useItem()
 void Sandbag::move()
 {
 	AS = ActionStatus::EndAction;
-
 	/*
 	const Point formerGrid = XYtoGrid(xyPosition);
 	const int formerDirection = direction;
@@ -230,7 +229,7 @@ void Kyonshih::attack()
 		const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(i * 90)), sin(Radians(i * 90)));
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
-			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter().get()->id == Player::id)
+			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getId() == CharacterId::player)
 				MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
 		}
 	}

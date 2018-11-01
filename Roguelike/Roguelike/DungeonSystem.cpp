@@ -8,7 +8,7 @@ void DungeonSystem::update()
 
 void DungeonSystem::draw()
 {
-	MapData::getInstance().drawMainMap();
+	MapData::getInstance().drawMainArea();
 	MapData::getInstance().drawSubArea();
 	LogSystem::getInstance().displayLog();
 

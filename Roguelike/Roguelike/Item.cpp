@@ -29,8 +29,8 @@ std::vector<String> ShimarinDango::selectTarget(std::vector<size_t> ints)
 	std::vector<String> re;
 	if (ints.size() == 1)
 	{
-		for (size_t i = 0; i < MapData::getInstance().getCharacterArray(Player::id).size(); i++)
-			re.emplace_back(MapData::getInstance().getCharacterArray(Player::id)[i]->getName());
+		for (size_t i = 0; i < MapData::getInstance().getCharacterArray(CharacterId::player).size(); i++)
+			re.emplace_back(MapData::getInstance().getCharacterArray(CharacterId::player)[i]->getName());
 		return re;
 	}
 	else
@@ -43,7 +43,7 @@ std::vector<String> ShimarinDango::selectTarget(std::vector<size_t> ints)
 }
 void ShimarinDango::eat(size_t i)
 {
-	std::shared_ptr<Character> character = MapData::getInstance().getCharacterArray(Player::id)[i];
+	std::shared_ptr<Character> character = MapData::getInstance().getCharacterArray(CharacterId::player)[i];
 	int heal = 100;
 	heal = character->increaseHP(heal);
 	LogSystem::getInstance().addLog(name + L"Ç" + character->getName() + L"Ç…êHÇ◊Ç≥ÇπÇΩÅB");

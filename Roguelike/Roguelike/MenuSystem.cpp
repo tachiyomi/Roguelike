@@ -59,7 +59,8 @@ bool MenuSystem::update()
 
 void MenuSystem::draw()
 {
-	Rect(menuSize).movedBy(menuOrigin)(background).draw(Color(Palette::Silver,100)).drawFrame(1.0, 0, Palette::Black);
+	Rect(menuSize).movedBy(menuOrigin).draw(Color(Palette::Silver, 180)).drawFrame(2.0, 0, Palette::Black);
+	//Rect(menuSize).movedBy(menuOrigin)(background).draw(Color(Palette::Silver,100)).drawFrame(1.0, 0, Palette::Black);
 
 	Transformer2D transformer(Mat3x2::Translate(menuOrigin + Point::One * 10), false);
 

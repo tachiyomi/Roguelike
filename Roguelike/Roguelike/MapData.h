@@ -54,7 +54,7 @@ public:
 	}
 	void update();
 	void fight(const std::shared_ptr<Character>&, const std::shared_ptr<Character>&);
-	void drawMainMap();
+	void drawMainArea();
 	void drawSubArea();
 
 	void drawSubMap();
@@ -112,7 +112,7 @@ public:
 		Array<std::shared_ptr<Character>> re;
 		for (auto e : characters)
 		{
-			if (e.get()->getid()== i)
+			if (e.get()->getId()== i)
 				re.emplace_back(e);
 		}
 		return re;

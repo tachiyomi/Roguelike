@@ -75,6 +75,13 @@ struct CharacterStatus
 	int baseMaxHP = 0, baseATK = 0, baseDEF = 0, HP = 0;
 	int exMaxHP = 0, exATK = 0, exDEF = 0;
 };
+enum CharacterId
+{
+	character=0,
+	player,
+	enemy=10,
+	sandbag,kyonshih
+};
 class Character : public std::enable_shared_from_this<Character>
 {
 public:
@@ -200,7 +207,6 @@ public:
 		addAbility(eq->getAbility());
 		CS.setItemStatus(eq->getItemStatus());
 	};
-
 	void takeout(std::shared_ptr<Equipment> eq)
 	{
 		switch (eq->getType())
@@ -257,7 +263,6 @@ public:
 	}
 
 	//changeDEF
-
 	int increaseDEF(int i)
 	{
 		CS.exDEF += i;
@@ -279,9 +284,9 @@ public:
 	const int getDEF() { return CS.getDEF(); }
 	const int getMaxHP() { return CS.getMaxHP(); }
 
-	static const int getid() { return 0; }
-	static const int id = 0;
+	int getId() { return id; }
 protected:
+	int id = CharacterId::character;
 	Texture img;
 	Point xyPosition;
 	Color color;
@@ -305,9 +310,6 @@ public:
 	void attack()override;
 	void openInventory();
 	void useItem();
-
-	static const int getid() { return 1; }
-	static const int id = 1;
 };
 //エネミー
 class Enemy :public Character
@@ -315,18 +317,18 @@ class Enemy :public Character
 public:
 	Enemy(Point pos) :Character(pos)
 	{
+		id = CharacterId::enemy;
 		color = Palette::Tomato;
 		CS.setStatus(100, 10, 70, 100);
 	}
 	Enemy(int x, int y) :Enemy(Point(x, y)) {}
-
-	static const int id = 10;
 };
 class Sandbag :public Enemy
 {
 public:
 	Sandbag(Point pos) :Enemy(pos)
 	{
+		id = CharacterId::sandbag;
 		img = Texture((L"Images/sandbag.png"));
 		name = L"サンドバッグ";
 
@@ -335,14 +337,13 @@ public:
 	Sandbag(int x, int y) :Sandbag(Point(x, y)) {}
 
 	void move()override;
-
-	static const int id = 11;
 };
 class Kyonshih :public Enemy
 {
 public:
 	Kyonshih(Point pos) :Enemy(pos)
 	{
+		id = CharacterId::kyonshih;
 		img = Texture((L"Images/pop.png"));
 		name = L"キョンシーもどき";
 
@@ -353,6 +354,4 @@ public:
 	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
 
 	void attack()override;
-
-	static const int id = 0;
 };

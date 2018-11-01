@@ -13,6 +13,13 @@ enum ItemType
 	Accessory,
 	Consumables
 };
+enum ItemId
+{
+	item=0,
+	glasses,shimarindango,microphone,gemoffly,
+	equipment=100,
+	blade,shield,ring
+};
 class Item
 {
 public:
@@ -55,6 +62,7 @@ public:
 
 	bool inInventory;
 protected:
+	int id = ItemId::item;
 	Texture img;
 	Point xyPosition;
 	Point gridPosition;
@@ -71,6 +79,7 @@ class Glasses :public Item
 public:
 	Glasses(Point pos) :Item(pos)
 	{
+		id = ItemId::glasses;
 		img = Texture((L"Images/glasses.png"));
 		name = L"誰かのメガネ";
 		type = ItemType::Consumables;
@@ -116,6 +125,7 @@ class ShimarinDango :public Item
 public:
 	ShimarinDango(Point pos) :Item(pos)
 	{
+		id = ItemId::shimarindango;
 		img = Texture((L"Images/shimarindango.png"));
 		name = L"しまりんだんご";
 		type = ItemType::Consumables;
@@ -146,6 +156,7 @@ class Microphone :public Item
 public:
 	Microphone(Point pos) :Item(pos)
 	{
+		id = ItemId::microphone;
 		img = Texture((L"Images/microphone.png"));
 		name = L"マイク";
 		type = ItemType::Consumables;
@@ -176,6 +187,7 @@ class GemOfFly :public Item
 public:
 	GemOfFly(Point pos) :Item(pos)
 	{
+		id = ItemId::gemoffly;
 		img = Texture((L"Images/microphone.png"));
 		name = L"凄い玉";
 		type = ItemType::Consumables;
@@ -239,7 +251,6 @@ public:
 	}
 	Blade(int x, int y) :Blade(Point(x, y)) {}
 };
-
 class Shield :public Equipment
 {
 public:
@@ -252,7 +263,6 @@ public:
 	}
 	Shield(int x, int y) :Shield(Point(x, y)) {}
 };
-
 class Ring :public Equipment
 {
 public:

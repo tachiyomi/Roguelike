@@ -11,14 +11,17 @@ MapData::MapData()
 	centerGrid = Point(0, 0);
 	mainDrawRange = Size(9, 7);
 	mainGridSize = Size(80, 80);
-	mainOrigin = Point(0, 0);
+	mainOrigin = Point(80, 80);
 	mainDrawSize = mainDrawRange * mainGridSize;
-	subOrigin = Point(mainDrawSize.x, 0);// +Point::One * 20;
-	subDrawSize = Point(400, 250);
-	subGridSize = Size::One*(int)std::max(subDrawSize.x / mainDrawRange.x, subDrawSize.y / mainDrawRange.y);
-	Println(subGridSize);
-	MenuSystem::getInstance().setSize(mainDrawSize - Size::One * 80);
-	MenuSystem::getInstance().setOrigin(Size::One * 40);
+	subOrigin = Point(mainDrawSize.x + mainOrigin.x * 2, 0);
+	subDrawSize = Point(400, 300);
+	Window::Resize(mainDrawSize + mainOrigin * 2 + Size::UnitX*subDrawSize.x);
+
+	MenuSystem::getInstance().setOrigin(Size::One * 30);
+	MenuSystem::getInstance().setSize(mainDrawSize - Size::One * 60);
+	LogSystem::getInstance().setOrigin(Point(subOrigin.x, subDrawSize.y));
+	LogSystem::getInstance().setSize(Size(Window::Width() - subOrigin.x, subDrawSize.y));
+
 	updateTimer.set(0s);
 }
 void MapData::loadMap(int i)
@@ -44,7 +47,16 @@ void MapData::loadMap(int i)
 	}
 	LogSystem::getInstance().addLog(L"マップが読み込まれました。");
 
-	//subGridSize = subDrawSize / std::max((int)mapGrid.height, (int)mapGrid.width);
+	if (subDrawSize.x / mapGrid.height > subDrawSize.y / mapGrid.width)
+	{
+		subGridSize = Size::One*(int)(subDrawSize.y / mapGrid.width);
+		subOrigin = Point(mainDrawSize.x + mainOrigin.x * 2 + subDrawSize.x / 2.0 - (subGridSize.x*mapGrid.height) / 2.0, 0);
+	}
+	else
+	{
+		subGridSize = Size::One*(int)(subDrawSize.x / mapGrid.height);
+		subOrigin = Point(mainDrawSize.x + mainOrigin.x * 2 + subDrawSize.y / 2.0 - (subGridSize.y*mapGrid.width) / 2.0, 0);
+	}
 }
 void MapData::setupOneGrid(GridData& grid, String str , Point p)
 {
@@ -62,26 +74,27 @@ void MapData::setupOneGrid(GridData& grid, String str , Point p)
 
 	switch (std::stoi(splittedStr[1].str()))
 	{
-	case 1:	
+	case CharacterId::player:
 		MapData::getInstance().registerCharacter(Player(p));
+		MapData::getInstance().setCenterPoint(p);
 		break;
-	case 2:
+	case CharacterId::sandbag:
 		MapData::getInstance().registerCharacter(Sandbag(p));
 		break;
-	case 3:
+	case CharacterId::kyonshih:
 		MapData::getInstance().registerCharacter(Kyonshih(p));
 		break;
 	}
 
 	switch (std::stoi(splittedStr[2].str()))
 	{
-	case 1:
-		MapData::getInstance().registerItem(GemOfFly(p));
+	case ItemId::glasses:
+		MapData::getInstance().registerItem(Glasses(p));
 		break;
-	case 2:
+	case ItemId::shimarindango:
 		MapData::getInstance().registerItem(ShimarinDango(p));
 		break;
-	case 3:
+	case ItemId::microphone:
 		MapData::getInstance().registerItem(Microphone(p));
 		break;
 	}
@@ -144,7 +157,7 @@ void MapData::fight(const std::shared_ptr<Character>& A, const std::shared_ptr<C
 	damage = B->decreaseHP(damage);
 	LogSystem::getInstance().addLog(A->getName() + L"は" + B->getName() + L"に" + ToString(damage) + L"ダメージ与えた。");
 }
-void MapData::drawMainMap()
+void MapData::drawMainArea()
 {
 	Transformer2D transformer(Mat3x2::Translate(mainOrigin), false);
 	setAllGridEnableDraw();
@@ -162,7 +175,7 @@ void MapData::drawMainMap()
 
 			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
 			{
-				if (getOneGridData(x, y).getCharacter()->getid() == Player::id)
+				if (getOneGridData(x, y).getCharacter()->getId() == CharacterId::player)
 					k = 10;
 				else
 					k = 20;
@@ -180,16 +193,14 @@ void MapData::drawMainMap()
 		}
 	}
 
-	if (Input::Key0.clicked)
-		ClearPrint();
+	if (MenuSystem::getInstance().isOpening())
+	{
+		Rect(mainDrawSize).draw(Color(Palette::Black, 120));
+		MenuSystem::getInstance().draw();
+	}
 }
 void MapData::drawSubArea()
 {
-	if (MenuSystem::getInstance().isOpening())
-	{
-		MenuSystem::getInstance().draw();
-	}
-
 	Transformer2D transformer(Mat3x2::Translate(subOrigin), false);
 	drawSubMap();
 }
@@ -200,12 +211,13 @@ void MapData::drawSubMap()
 		for (int x = 0; x < (int)mapGrid.height; x++)
 		{
 			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
+			if (k == 0)k = 400;
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
 			drawOneGridGround(SubGridtoXY(x, y), subGridSize, k);
 
 			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
 			{
-				if (getOneGridData(x, y).getCharacter()->getid() == Player::id)
+				if (getOneGridData(x, y).getCharacter()->getId() == CharacterId::player)
 					k = 100;
 				else
 					k = 200;
@@ -250,17 +262,16 @@ void MapData::deleteExceptPlayer()
 {
 	for (size_t i = 0; i < characters.size(); i++)
 	{
-		if (!characters[i]->id==Character::id)
+		if (!characters[i]->getId()==CharacterId::player)
 		{
 			characters.erase(characters.begin() + i);
 			i--;
 		}
 	}
-	Println(MapData::getInstance().getCharacterArray(Player::id).size());
+	Println(characters.size());
 	for (size_t i = 0; i < items.size(); i++)
 	{
-		/*
-		Array<std::weak_ptr<Item>> ptr = MapData::getInstance().getCharacterArray(Player::id)[0]->getInventory();
+		Array<std::weak_ptr<Item>> ptr = MapData::getInstance().getCharacterArray(CharacterId::player)[0]->getInventory();
 		for (size_t j= 0; j < ptr.size(); j++)
 		{
 			if (items[i] == ptr[j].lock())
@@ -268,7 +279,6 @@ void MapData::deleteExceptPlayer()
 		}
 		items.erase(items.begin() + i);
 		i--;
-		*/
 	}
 }
 void MapData::drawOneGridGround(Point p, Size s, int k)
@@ -305,6 +315,8 @@ void MapData::drawOneGridGround(Point p, Size s, int k)
 		break;
 	case 300:
 		Rect(p, s).draw(Color(Palette::Mediumspringgreen, 200)).drawFrame(1, 0, Palette::Black);
+		break;
+	case 400:
 		break;
 
 	default:
