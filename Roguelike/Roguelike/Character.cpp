@@ -1,6 +1,7 @@
 #include "Character.h"
 #include "MapData.h"
 #include "MenuSystem.h"
+#include "DungeonSystem.h"
 
 //キャラクター
 Character::Character(Point pos) 
@@ -46,6 +47,8 @@ void Character::applyTurnEndAbility()
 	for (size_t i = 0; i < abilities.size(); i++)
 		abilities[i]->turnEnd(shared_from_this());
 	deleteAbility();
+	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getTerrain() == 2)
+		DungeonSystem::getInstance().shiftNextFloor();
 }
 void Character::applyAttackAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 	std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB)

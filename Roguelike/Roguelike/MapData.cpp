@@ -15,6 +15,7 @@ MapData::MapData()
 	mainDrawSize = mainDrawRange * mainGridSize;
 	subOrigin = Point(mainDrawSize.x + mainOrigin.x * 2, 0);
 	subDrawSize = Point(400, 300);
+	Window::SetStyle(WindowStyle::NonFrame);
 	Window::Resize(mainDrawSize + mainOrigin * 2 + Size::UnitX*subDrawSize.x);
 
 	MenuSystem::getInstance().setOrigin(Size::One * 30);
@@ -75,7 +76,13 @@ void MapData::setupOneGrid(GridData& grid, String str , Point p)
 	switch (std::stoi(splittedStr[1].str()))
 	{
 	case CharacterId::player:
-		MapData::getInstance().registerCharacter(Player(p));
+		if (getCharacterArray(CharacterId::player).size() == 0)
+			MapData::getInstance().registerCharacter(Player(p));
+		else
+		{
+			getCharacterArray(CharacterId::player)[0]->setGridPosition(p);
+			getOneGridData(p).setCharacter(getCharacterArray(CharacterId::player)[0]);
+		}
 		MapData::getInstance().setCenterPoint(p);
 		break;
 	case CharacterId::sandbag:
@@ -120,6 +127,7 @@ void MapData::update()
 		if (characters[i]->getStatus() == ActionStatus::WaitKeyInput)
 		{
 			characters[i]->act();
+			//Println(ToString(System::FrameCount()) + characters[i]->getName());
 		}
 		else if (characters[i]->getStatus() == ActionStatus::EndAction)
 		{
@@ -128,7 +136,7 @@ void MapData::update()
 				updateTimer.start();
 				break;
 			}
-			else if (updateTimer.ms() < 0)
+			else if (updateTimer.ms() < 1)
 				break;
 			else
 				updateTimer.set(0s);
@@ -179,8 +187,8 @@ void MapData::drawMainArea()
 					k = 10;
 				else
 					k = 20;
-				if (getOneGridData(x, y).getCharacter()->getStatus() == ActionStatus::EndAction)
-					k = 60;
+				//if (getOneGridData(x, y).getCharacter()->getStatus() == ActionStatus::EndAction)
+				//	k = 60;
 			}
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 30;
@@ -262,23 +270,25 @@ void MapData::deleteExceptPlayer()
 {
 	for (size_t i = 0; i < characters.size(); i++)
 	{
-		if (!characters[i]->getId()==CharacterId::player)
+		if (characters[i]->getId() != CharacterId::player)
 		{
 			characters.erase(characters.begin() + i);
 			i--;
 		}
 	}
-	Println(characters.size());
+	//Println(ToString(characters.size()) + L"/" + ToString(items.size()));
 	for (size_t i = 0; i < items.size(); i++)
 	{
+		bool flag = true;
 		Array<std::weak_ptr<Item>> ptr = MapData::getInstance().getCharacterArray(CharacterId::player)[0]->getInventory();
-		for (size_t j= 0; j < ptr.size(); j++)
-		{
+		for (size_t j = 0; j < ptr.size(); j++)
 			if (items[i] == ptr[j].lock())
-				return;
+				flag = false;
+		if (flag)
+		{
+			items.erase(items.begin() + i);
+			i--;
 		}
-		items.erase(items.begin() + i);
-		i--;
 	}
 }
 void MapData::drawOneGridGround(Point p, Size s, int k)
@@ -290,6 +300,9 @@ void MapData::drawOneGridGround(Point p, Size s, int k)
 		break;
 	case 1:
 		Rect(p, s).draw(Palette::Sandybrown).drawFrame(1, 0, Palette::Sienna);
+		break;
+	case 2:
+		Rect(p, s).draw(Palette::Navajowhite).drawFrame(1, 0, Palette::Sienna);
 		break;
 
 		//mainMap

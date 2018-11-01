@@ -101,7 +101,7 @@ public:
 	virtual bool enableLive();
 	virtual void doSomethingAtDeath();
 
-	void setGridPosition(Point p) { xyPosition = p; }
+	void setGridPosition(Point p) { xyPosition = GridtoXY(p); }
 	void setRad(int d) { direction = d; }
 	Point getGridPosition() { return XYtoGrid(xyPosition); }
 	double getRad() { return Radians(direction); }

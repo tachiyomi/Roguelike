@@ -19,8 +19,5 @@ void Main()
 	{
 		DungeonSystem::getInstance().update();
 		DungeonSystem::getInstance().draw();
-
-		if (Input::Key0.clicked)
-			DungeonSystem::getInstance().shiftNextFloor();
 	}
 }

@@ -17,7 +17,7 @@ public:
 	void setTerrain(int t)
 	{
 		terrain = t;
-		if (terrain == 1)
+		if (terrain == 1 || terrain == 2)
 			enableInvade = true;
 	}
 	void setEnableDraw(bool b) { enableDraw = b; }
