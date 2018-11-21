@@ -16,7 +16,7 @@ enum ItemType
 enum ItemId
 {
 	item=0,
-	glasses,shimarindango,microphone,gemoffly,
+	potion,glasses,microphone,gemoffly,
 	equipment=100,
 	blade,shield,ring
 };
@@ -120,17 +120,17 @@ public:
 		use();
 	}
 };
-class ShimarinDango :public Item
+class Potion :public Item
 {
 public:
-	ShimarinDango(Point pos) :Item(pos)
+	Potion(Point pos) :Item(pos)
 	{
-		id = ItemId::shimarindango;
-		img = Texture((L"Images/shimarindango.png"));
-		name = L"‚µ‚Ü‚è‚ñ‚¾‚ñ‚²";
+		id = ItemId::potion;
+		img = Texture((L"/1003"));
+		name = L"‰ñ•œ–ò";
 		type = ItemType::Consumables;
 	}
-	ShimarinDango(int x, int y) :ShimarinDango(Point(x, y)) {}
+	Potion(int x, int y) :Potion(Point(x, y)) {}
 
 	std::vector<String> getChoice(std::vector<size_t> ints) override
 	{

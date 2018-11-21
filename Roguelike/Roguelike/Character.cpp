@@ -7,28 +7,30 @@
 Character::Character(Point pos) 
 {
 	xyPosition = GridtoCenterXY(pos);
-	direction = 0;
+	direction = Direction::Right;
 	AS = ActionStatus::WaitOtherAction;
 }
 Character::Character(int x, int y) :Character(Point(x, y)) {}
 void Character::act()
 {
-	move();
 	attack();
+	move();
 }
 void Character::draw()
+
 {
 	if (!MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).canBeDraw())
 		return;
 
 	const Point drawPosition = GridtoXY(XYtoGrid(xyPosition) - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2);
-	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 0, color);
-	Circle(GridtoCenterXY(XYtoGrid(drawPosition)) + Vec2(MapData::getInstance().getMainGridSize().x / 2 * cos(Radians(direction)), MapData::getInstance().getMainGridSize().x / 2 * sin(Radians(direction))), 2).draw(Palette::Black);
+	Rect(Point(drawPosition.x, drawPosition.y), MapData::getInstance().getMainGridSize()).rotated(ToRadian(direction))(img).draw();// .drawFrame(1, 0, color);
 
+	/*
 	Color c = Palette::Black;
 	FontAsset(L"statusFont")(ToString(CS.getHP())+L"/"+ ToString(CS.getMaxHP())).draw(drawPosition + Point(3,0), c);
 	FontAsset(L"statusFont")(L"[A]" + ToString(CS.getATK())).draw(drawPosition + Point(3, MapData::getInstance().getMainGridSize().y / 3 * 1), c);
 	FontAsset(L"statusFont")(L"[D]" + ToString(CS.getDEF())).draw(drawPosition + Point(3, MapData::getInstance().getMainGridSize().y / 3 * 2), c);
+	*/
 }
 void Character::move()
 {
@@ -47,8 +49,6 @@ void Character::applyTurnEndAbility()
 	for (size_t i = 0; i < abilities.size(); i++)
 		abilities[i]->turnEnd(shared_from_this());
 	deleteAbility();
-	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getTerrain() == 2)
-		DungeonSystem::getInstance().shiftNextFloor();
 }
 void Character::applyAttackAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 	std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB)
@@ -95,11 +95,19 @@ void Character::doSomethingAtDeath()
 Player::Player(Point pos) :Character(pos)
 {
 	id = CharacterId::player;
-	img = Texture(L"Images/image.png");
+	img = Texture(L"/1000");
 	color = Palette::Dodgerblue;
-	name = L"Ç»Ç≈ÇµÇ±";
+	name = L"ÉÅÉAÉäÅ[";
 
-	CS.setStatus(1000, 80, 60, 1000);
+	CS.setStatus(600, 60, 40, 600);
+}
+void Player::applyTurnEndAbility()
+{
+	for (size_t i = 0; i < abilities.size(); i++)
+		abilities[i]->turnEnd(shared_from_this());
+	deleteAbility();
+	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getTerrain() == 2)
+		DungeonSystem::getInstance().shiftNextFloor();
 }
 void Player::act()
 {
@@ -129,22 +137,21 @@ void Player::move()
 
 	bool keyInput = true;
 	if (Input::KeyUp.clicked || Gamepad(0).povForward.clicked)
-		direction = 270;
+		direction = Direction::Up;
 	else if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
-		direction = 90;
+		direction = Direction::Down;
 	else if (Input::KeyLeft.clicked || Gamepad(0).povLeft.clicked)
-		direction = 180;
+		direction = Direction::Left;
 	else if (Input::KeyRight.clicked || Gamepad(0).povRight.clicked)
-		direction = 0;
+		direction = Direction::Right;
 	else
 		keyInput = false;
 
-	if ( (Input::KeyControl.pressed || Gamepad(0).button(0).pressed) || !keyInput)
+	if ( (Input::KeyShift.pressed || Gamepad(0).button(0).pressed) || !keyInput)
 		return;
 
-	Point p(cos(Radians(direction)), sin(Radians(direction)));
-	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + p).enableAddCharacter())
-		xyPosition += GridtoXY(p);
+	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction)).enableAddCharacter())
+		xyPosition += GridtoXY(getGrid(direction));
 
 	if (XYtoGrid(xyPosition) != formerGrid)
 	{
@@ -172,7 +179,7 @@ void Player::attack()
 	if (!(Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
 		return;
 
-	const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(direction)), sin(Radians(direction)));
+	const Point frontOfMe = XYtoGrid(xyPosition) + getGrid(direction);
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 	{
 		MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
@@ -184,7 +191,7 @@ void Player::openInventory()
 	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
-	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
+	if (Input::KeyI.clicked || Gamepad(0).button(7).clicked)
 	{
 		MenuSystem::getInstance().openMenu(shared_from_this());
 	}
@@ -194,48 +201,126 @@ void Player::useItem()
 	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
-	if (Input::KeyShift.clicked || Gamepad(0).button(7).clicked)
+	if (Input::KeyI.clicked || Gamepad(0).button(7).clicked)
 		MenuSystem::getInstance().closeMenu();
 
 	if (MenuSystem::getInstance().update())
 		AS = ActionStatus::EndAction;
 }
 
-void Sandbag::move()
+void Frankenstein::move()
 {
-	AS = ActionStatus::EndAction;
-	/*
+	if (AS != ActionStatus::WaitKeyInput)
+		return;
+
 	const Point formerGrid = XYtoGrid(xyPosition);
-	const int formerDirection = direction;
 
-	direction = int(Random() * 4) + 1;
-	direction *= 90;
-
-	Point p(cos(Radians(direction)), sin(Radians(direction)));
-	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + p).enableAddCharacter())
-	xyPosition += GridtoXY(p);
+	if (Random() < 0.4)
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + i)).enableAddCharacter())
+			{
+				xyPosition += GridtoXY(getGrid(direction + i));
+				rotateDirection(direction, i);
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			int ran = (int)(Random() * 8);
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + ran)).enableAddCharacter())
+			{
+				xyPosition += GridtoXY(getGrid(direction + ran));
+				rotateDirection(direction, ran);
+				break;
+			}
+		}
+	}
 
 	if (XYtoGrid(xyPosition) != formerGrid)
 	{
-	MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).setCharacter(MapData::getInstance().getOneGridData(formerGrid).getCharacter());
-	MapData::getInstance().getOneGridData(formerGrid).deleteCharacter();
-	return true;
+		MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getWeakCharacter().swap(MapData::getInstance().getOneGridData(formerGrid).getWeakCharacter());
 	}
-	return true;
-	*/
+	AS = ActionStatus::EndAction;
 }
 
-void Kyonshih::attack()
+void Frankenstein::attack()
 {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 8; i++)
 	{
-		const Point frontOfMe = XYtoGrid(xyPosition) + Point(cos(Radians(i * 90)), sin(Radians(i * 90)));
+		const Point frontOfMe = XYtoGrid(xyPosition) + getGrid(i);
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
 			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getId() == CharacterId::player)
+			{
+				direction = static_cast<Direction>(i);
 				MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
+				AS = ActionStatus::EndAction;
+				break;
+			}
 		}
 	}
+}
+
+void Ghost::move()
+{
+	if (AS != ActionStatus::WaitKeyInput)
+		return;
+
+	const Point formerGrid = XYtoGrid(xyPosition);
+
+	if (Random() < 0.1)
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + i)).enableAddCharacter())
+			{
+				xyPosition += GridtoXY(getGrid(direction + i));
+				rotateDirection(direction, i);
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			int ran = (int)(Random() * 8);
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + ran)).enableAddCharacter())
+			{
+				xyPosition += GridtoXY(getGrid(direction + ran));
+				rotateDirection(direction, ran);
+				break;
+			}
+		}
+	}
+
+	if (XYtoGrid(xyPosition) != formerGrid)
+	{
+		MapData::getInstance().getOneGridData(XYtoGrid(xyPosition)).getWeakCharacter().swap(MapData::getInstance().getOneGridData(formerGrid).getWeakCharacter());
+	}
 	AS = ActionStatus::EndAction;
+}
+
+void Ghost::attack()
+{
+	for (int i = 0; i < 8; i++)
+	{
+		const Point frontOfMe = XYtoGrid(xyPosition) + getGrid(static_cast<Direction>(i));
+		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
+		{
+			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getId() == CharacterId::player)
+			{
+				direction = static_cast<Direction>(i);
+				MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
+				AS = ActionStatus::EndAction;
+				break;
+			}
+		}
+	}
 }
 

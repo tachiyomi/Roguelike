@@ -80,7 +80,7 @@ enum CharacterId
 	character=0,
 	player,
 	enemy=10,
-	sandbag,kyonshih
+	frankenstein,ghost
 };
 class Character : public std::enable_shared_from_this<Character>
 {
@@ -92,7 +92,7 @@ public:
 	virtual void move();
 	virtual void attack();
 	void applyTurnStartAbility();
-	void applyTurnEndAbility();
+	virtual void applyTurnEndAbility();
 	void applyAttackAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
 		std::shared_ptr<Character> copyA, std::shared_ptr<Character>copyB);
 	void applyDefendAbility(std::shared_ptr<Character> A, std::shared_ptr<Character> B,
@@ -102,9 +102,8 @@ public:
 	virtual void doSomethingAtDeath();
 
 	void setGridPosition(Point p) { xyPosition = GridtoXY(p); }
-	void setRad(int d) { direction = d; }
+	void setRad(Direction d) { direction = d; }
 	Point getGridPosition() { return XYtoGrid(xyPosition); }
-	double getRad() { return Radians(direction); }
 	void setStatus(ActionStatus cs) { AS = cs; }
 	ActionStatus getStatus() { return AS; }
 	Array<String> getAbility()
@@ -291,7 +290,7 @@ protected:
 	Point xyPosition;
 	Color color;
 	String name;
-	int direction;
+	Direction direction;
 	ActionStatus AS;
 	CharacterStatus CS;
 	std::weak_ptr<Equipment>weapon, armor, accessory;
@@ -305,6 +304,7 @@ public:
 	Player(Point pos);
 	Player(int x, int y) :Player(Point(x, y)) {}
 
+	void applyTurnEndAbility()override;
 	void act()override;
 	void move()override;
 	void attack()override;
@@ -323,35 +323,37 @@ public:
 	}
 	Enemy(int x, int y) :Enemy(Point(x, y)) {}
 };
-class Sandbag :public Enemy
+class Frankenstein :public Enemy
 {
 public:
-	Sandbag(Point pos) :Enemy(pos)
+	Frankenstein(Point pos) :Enemy(pos)
 	{
-		id = CharacterId::sandbag;
-		img = Texture((L"Images/sandbag.png"));
-		name = L"サンドバッグ";
+		id = CharacterId::frankenstein;
+		img = Texture(L"/1001");
+		name = L"フランケン";
 
-		CS.setStatus(900, 0, 20, 900);
+		CS.setStatus(300, 60, 10, 300);
 	}
-	Sandbag(int x, int y) :Sandbag(Point(x, y)) {}
+	Frankenstein(int x, int y) :Frankenstein(Point(x, y)) {}
 
 	void move()override;
+	void attack()override;
 };
-class Kyonshih :public Enemy
+class Ghost :public Enemy
 {
 public:
-	Kyonshih(Point pos) :Enemy(pos)
+	Ghost(Point pos) :Enemy(pos)
 	{
-		id = CharacterId::kyonshih;
-		img = Texture((L"Images/pop.png"));
-		name = L"キョンシーもどき";
+		id = CharacterId::ghost;
+		img = Texture((L"/1002"));
+		name = L"ゴースト";
 
-		CS.setStatus(200, 40, 40, 200);
+		CS.setStatus(400, 20, 20, 400);
 
 		abilities.emplace_back(std::make_shared<IgnoreArmor>());
 	}
-	Kyonshih(int x, int y) :Kyonshih(Point(x, y)) {}
+	Ghost(int x, int y) :Ghost(Point(x, y)) {}
 
+	void move()override;
 	void attack()override;
 };

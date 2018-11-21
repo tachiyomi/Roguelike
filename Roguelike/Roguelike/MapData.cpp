@@ -7,16 +7,15 @@
 
 MapData::MapData()
 {
+	stairs = Texture(L"/2000");
 	outsideGrid = GridData();
 	centerGrid = Point(0, 0);
 	mainDrawRange = Size(9, 7);
 	mainGridSize = Size(80, 80);
-	mainOrigin = Point(80, 80);
+	mainOrigin = Point(10, 40);
 	mainDrawSize = mainDrawRange * mainGridSize;
 	subOrigin = Point(mainDrawSize.x + mainOrigin.x * 2, 0);
-	subDrawSize = Point(400, 300);
-	Window::SetStyle(WindowStyle::NonFrame);
-	Window::Resize(mainDrawSize + mainOrigin * 2 + Size::UnitX*subDrawSize.x);
+	subDrawSize = Point(360, 300);
 
 	MenuSystem::getInstance().setOrigin(Size::One * 30);
 	MenuSystem::getInstance().setSize(mainDrawSize - Size::One * 60);
@@ -27,7 +26,7 @@ MapData::MapData()
 }
 void MapData::loadMap(int i)
 {
-	const CSVReader reader(L"Csvs/data" + ToString(i) + L".csv");
+	const CSVReader reader(L"/" + ToString(4000 + i - 1));
 
 	if (!reader)
 		return;
@@ -42,11 +41,10 @@ void MapData::loadMap(int i)
 	{
 		for (size_t x = 0; x < width; x++)
 		{
-			String str = reader.getOr<String>(y, x, L"");
-			setupOneGrid(mapGrid[x][y], str, Point(x, y));
+			String exit = reader.getOr<String>(y, x, L"");
+			setupOneGrid(mapGrid[x][y], exit, Point(x, y));
 		}
 	}
-	LogSystem::getInstance().addLog(L"マップが読み込まれました。");
 
 	if (subDrawSize.x / mapGrid.height > subDrawSize.y / mapGrid.width)
 	{
@@ -85,24 +83,18 @@ void MapData::setupOneGrid(GridData& grid, String str , Point p)
 		}
 		MapData::getInstance().setCenterPoint(p);
 		break;
-	case CharacterId::sandbag:
-		MapData::getInstance().registerCharacter(Sandbag(p));
+	case CharacterId::frankenstein:
+		MapData::getInstance().registerCharacter(Frankenstein(p));
 		break;
-	case CharacterId::kyonshih:
-		MapData::getInstance().registerCharacter(Kyonshih(p));
+	case CharacterId::ghost:
+		MapData::getInstance().registerCharacter(Ghost(p));
 		break;
 	}
 
 	switch (std::stoi(splittedStr[2].str()))
 	{
-	case ItemId::glasses:
-		MapData::getInstance().registerItem(Glasses(p));
-		break;
-	case ItemId::shimarindango:
-		MapData::getInstance().registerItem(ShimarinDango(p));
-		break;
-	case ItemId::microphone:
-		MapData::getInstance().registerItem(Microphone(p));
+	case ItemId::potion:
+		MapData::getInstance().registerItem(Potion(p));
 		break;
 	}
 }
@@ -127,7 +119,6 @@ void MapData::update()
 		if (characters[i]->getStatus() == ActionStatus::WaitKeyInput)
 		{
 			characters[i]->act();
-			//Println(ToString(System::FrameCount()) + characters[i]->getName());
 		}
 		else if (characters[i]->getStatus() == ActionStatus::EndAction)
 		{
@@ -245,6 +236,12 @@ void MapData::drawAbility()
 	for (size_t i = 0; i < strs.size(); i++)
 		FontAsset(L"menuFont")(strs[i]).draw(0, (double)i * 30).drawFrame(0.0, 1.5, Palette::Green);
 }
+void MapData::reset()
+{
+	characters.clear();
+	items.clear();
+	LogSystem::getInstance().clearLog();
+}
 void MapData::deleteObject()
 {
 	for (size_t i = 0; i < characters.size(); i++)
@@ -276,7 +273,6 @@ void MapData::deleteExceptPlayer()
 			i--;
 		}
 	}
-	//Println(ToString(characters.size()) + L"/" + ToString(items.size()));
 	for (size_t i = 0; i < items.size(); i++)
 	{
 		bool flag = true;
@@ -302,18 +298,19 @@ void MapData::drawOneGridGround(Point p, Size s, int k)
 		Rect(p, s).draw(Palette::Sandybrown).drawFrame(1, 0, Palette::Sienna);
 		break;
 	case 2:
-		Rect(p, s).draw(Palette::Navajowhite).drawFrame(1, 0, Palette::Sienna);
+		Rect(p, s).draw(Palette::Indianred).drawFrame(1, 0, Palette::Black);
+		Rect(p, s)(stairs).draw(Palette::Navajowhite);
 		break;
 
 		//mainMap
 	case 10:
-		Rect(p, s).draw(Color(Palette::Aqua, 100)).drawFrame(1, 0, Palette::Black);
+		//Rect(p, s).draw(Color(Palette::Aqua, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 	case 20:
-		Rect(p, s).draw(Color(Palette::Tomato, 100)).drawFrame(1, 0, Palette::Black);
+		//Rect(p, s).draw(Color(Palette::Tomato, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 	case 30:
-		Rect(p, s).draw(Color(Palette::Mediumspringgreen, 100)).drawFrame(1, 0, Palette::Black);
+		//Rect(p, s).draw(Color(Palette::Mediumspringgreen, 100)).drawFrame(1, 0, Palette::Black);
 		break;
 
 	case 60:

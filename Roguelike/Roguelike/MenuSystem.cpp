@@ -9,7 +9,6 @@ MenuSystem::MenuSystem() :
 	menuSize(Window::Width() / 2,Window::Width() / 2 -100),
 	enableSee(false)
 {
-	background = Texture(L"Images/menuBackground.jpg");
 	selectChoiceNumber.emplace_back(0);
 }
 void MenuSystem::openMenu(std::shared_ptr<Character> c)
@@ -39,13 +38,13 @@ bool MenuSystem::update()
 		if ((Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
 		{
 			selectChoiceNumber.emplace_back(0);
-			std::vector<s3d::String> str = playingCharacter->getChoice(selectChoiceNumber);
-			if (str.empty())
+			std::vector<s3d::String> exit = playingCharacter->getChoice(selectChoiceNumber);
+			if (exit.empty())
 			{
 				closeMenu();
 				return true;
 			}
-			else if (str[0] == L"false")
+			else if (exit[0] == L"false")
 			{
 				closeMenu();
 				return false;
@@ -74,17 +73,17 @@ void MenuSystem::draw()
 		for (size_t i = 0; i < playingCharacter->getChoice(ints).size(); i++)
 		{
 			int sum = std::accumulate(ints.begin(), ints.end() - 1, 0);
-			String str = L" " + playingCharacter->getChoice(ints)[i] + L" "; 
+			String exit = L" " + playingCharacter->getChoice(ints)[i] + L" "; 
 			Point point = Point(width, (sum + i) * (FontAsset(L"menuFont").height + 7));
 			if (i == selectChoiceNumber[k])
 			{
-				FontAsset(L"menuFont")(str).region(point).draw(Palette::Royalblue);
-				w += FontAsset(L"menuFont")(str).draw(point).drawFrame(0.0, 2.5, Palette::Navy).w + 6;
+				FontAsset(L"menuFont")(exit).region(point).draw(Palette::Royalblue);
+				w += FontAsset(L"menuFont")(exit).draw(point).drawFrame(0.0, 2.5, Palette::Navy).w + 6;
 			}
 			else
 			{
-				FontAsset(L"menuFont")(str).region(point).draw(Palette::Black);
-				FontAsset(L"menuFont")(str).draw(point, Palette::Gray).drawFrame(1.5, 0.0, Palette::Gray);
+				FontAsset(L"menuFont")(exit).region(point).draw(Palette::Black);
+				FontAsset(L"menuFont")(exit).draw(point, Palette::Gray).drawFrame(1.5, 0.0, Palette::Gray);
 			}
 		}
 		k++;

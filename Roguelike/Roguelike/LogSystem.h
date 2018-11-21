@@ -5,11 +5,11 @@
 struct LogData
 {
 	LogData(String s = L"There is not data.", int i = -1) :
-		str(s),
+		exit(s),
 		icon(i)
 	{}
 
-	String str;
+	String exit;
 	int icon;
 };
 struct IconData
@@ -37,6 +37,7 @@ public:
 
 	void displayLog();
 	void addLog(String);
+	void clearLog() { log.clear(); }
 	
 	Point getOrigin() { return logOrigin; }
 	void setOrigin(Point p) { logOrigin = p; }

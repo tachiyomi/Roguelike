@@ -17,14 +17,14 @@ Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()
 {
 	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw() && !inInventory)
-		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw().drawFrame(1, 0, color);
+		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw();// .drawFrame(1, 0, color);
 }
 void Item::doSomethingAtRemoval()
 {
 	LogSystem::getInstance().addLog(name + L"は失われた。");
 }
 
-std::vector<String> ShimarinDango::selectTarget(std::vector<size_t> ints)
+std::vector<String> Potion::selectTarget(std::vector<size_t> ints)
 {
 	std::vector<String> re;
 	if (ints.size() == 1)
@@ -41,10 +41,10 @@ std::vector<String> ShimarinDango::selectTarget(std::vector<size_t> ints)
 		return re;
 	}
 }
-void ShimarinDango::eat(size_t i)
+void Potion::eat(size_t i)
 {
 	std::shared_ptr<Character> character = MapData::getInstance().getCharacterArray(CharacterId::player)[i];
-	int heal = 100;
+	int heal = 300;
 	heal = character->increaseHP(heal);
 	LogSystem::getInstance().addLog(name + L"を" + character->getName() + L"に食べさせた。");
 	LogSystem::getInstance().addLog(character->getName() + L"は" + name + L"によって" + ToString(heal) + L"のHPを回復した。");

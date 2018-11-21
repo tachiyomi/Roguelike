@@ -61,6 +61,7 @@ public:
 	void drawAbility();
 
 	void sort() { ; }
+	void reset();
 	void deleteObject();
 	void deleteExceptPlayer();
 
@@ -137,11 +138,12 @@ private:
 	void operator = (const MapData&) {}
 	MapData(const MapData&) {}
 
+	Texture stairs;
 	Grid<GridData> mapGrid;
 	GridData outsideGrid;
 	Point centerGrid;
 	Size mainDrawRange;
-	Size mainGridSize; Point mainOrigin; Size mainDrawSize;;
+	Size mainGridSize; Point mainOrigin; Size mainDrawSize;
 	Size subGridSize; Point subOrigin; Size subDrawSize;
 	Array<std::shared_ptr<Character>> characters;
 	Array<std::shared_ptr<Item>> items;

@@ -171,6 +171,7 @@
     <ClCompile Include="MapData.cpp" />
     <ClCompile Include="MenuSystem.cpp" />
     <ClCompile Include="Character.cpp" />
+    <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
@@ -293,6 +294,7 @@
     <ClInclude Include="MapData.h" />
     <ClInclude Include="MenuSystem.h" />
     <ClInclude Include="Character.h" />
+    <ClInclude Include="Scene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

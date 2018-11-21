@@ -52,3 +52,17 @@
 // App Resource
 100		ICON	"Icon.ico"
 101		FILE	"Engine/Splash.png"
+
+//Roguelike
+1000		FILE	"Images/player.png"
+1001		FILE	"Images/frankenstein.png"
+1002		FILE	"Images/ghost.png"
+1003		FILE	"Images/potion.png"
+2000		FILE	"Images/stairs.png"
+3000		FILE	"Images/title.png"
+
+4000		FILE	"Csvs/data1.csv"
+4001		FILE	"Csvs/data2.csv"
+4002		FILE	"Csvs/data3.csv"
+4003		FILE	"Csvs/data4.csv"
+4004		FILE	"Csvs/data5.csv"

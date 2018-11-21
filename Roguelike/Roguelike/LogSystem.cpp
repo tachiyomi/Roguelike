@@ -32,7 +32,7 @@ void LogSystem::displayLog()
 		if (log.at(i).icon == -1)
 		{
 			h += FontAsset(L"logFont").height + gap;
-			FontAsset(L"logFont")(log.at(i).str).draw(gap, h - gap - FontAsset(L"logFont").ascent);
+			FontAsset(L"logFont")(log.at(i).exit).draw(gap, h - gap - FontAsset(L"logFont").ascent);
 		}
 		else
 		{
@@ -41,25 +41,25 @@ void LogSystem::displayLog()
 
 			h += icon[log.at(i).icon].size.y + gap + 2;
 
-			FontAsset(L"logFont")(log.at(i).str)
+			FontAsset(L"logFont")(log.at(i).exit)
 				.draw(gap * 2 + icon[log.at(i).icon].size.x, h - gap - FontAsset(L"logFont").ascent);
 		}
 		Line(0, h, logSize.x, h).draw(Palette::Gold);
 	}
 }
-void LogSystem::addLog(String str)
+void LogSystem::addLog(String exit)
 {
 	int k = -1;
 	for (size_t i = 0; i < icon.size(); i++)
 	{
-		if (int wordpos = str.indexOf(icon[i].keyword) != -1)
+		if (int wordpos = exit.indexOf(icon[i].keyword) != -1)
 		{
 			k = (int)i;
-			str.erase(str.begin() + wordpos - 1, str.begin() + wordpos + icon[i].keyword.length - 1);
+			exit.erase(exit.begin() + wordpos - 1, exit.begin() + wordpos + icon[i].keyword.length - 1);
 		}
 	}
 
-	log.push_front(LogData(str, k));
+	log.push_front(LogData(exit, k));
 	if ((int)log.size() > maxLogSize)
 		log.pop_back();
 }

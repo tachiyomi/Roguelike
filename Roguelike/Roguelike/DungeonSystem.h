@@ -13,8 +13,18 @@ public:
 	void update();
 	void draw();
 
+	void startAtFirstFloor();
 	void shiftNextFloor();
 
+	int getFloorNumber() { return floorNumber; }
+	String getTotaltimeANDstop()
+	{
+		totaltimer.pause();
+		return ToString(totaltimer.min()) + L"•ª " + ToString(totaltimer.s() % 60) + L"•b"; 
+	}
+
+	bool gameClear() { return floorNumber > 5; }
+	bool gameOver() { return MapData::getInstance().getCharacterArray(CharacterId::player).size() == 0; }
 protected:
 	DungeonSystem();
 	virtual ~DungeonSystem() {}
@@ -23,4 +33,5 @@ private:
 	DungeonSystem(const DungeonSystem&) {}
 
 	int floorNumber;
+	Stopwatch timer, totaltimer;
 };

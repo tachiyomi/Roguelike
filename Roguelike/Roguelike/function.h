@@ -10,3 +10,11 @@ Point SubGridtoXY(int, int);
 Point GridtoCenterXY(int, int);
 Point XYtoGrid(int, int);
 Point getMouseGrid();
+
+enum Direction
+{
+	Right, UpRight, Up, UpLeft, Left, DownLeft, Down, DownRight
+};
+void rotateDirection(Direction&, int);
+Point getGrid(int);
+double ToRadian(int);
