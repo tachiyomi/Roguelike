@@ -101,9 +101,9 @@ public:
 	virtual bool enableLive();
 	virtual void doSomethingAtDeath();
 
-	void setGridPosition(Point p) { xyPosition = GridtoXY(p); }
+	void setGridPosition(Point p) { position = p; }
 	void setRad(Direction d) { direction = d; }
-	Point getGridPosition() { return XYtoGrid(xyPosition); }
+	Point getGridPosition() { return position; }
 	void setStatus(ActionStatus cs) { AS = cs; }
 	ActionStatus getStatus() { return AS; }
 	Array<String> getAbility()
@@ -287,7 +287,8 @@ public:
 protected:
 	int id = CharacterId::character;
 	Texture img;
-	Point xyPosition;
+	Point position;
+	Vec2 offsetPosition;
 	Color color;
 	String name;
 	Direction direction;

@@ -64,7 +64,7 @@ public:
 protected:
 	int id = ItemId::item;
 	Texture img;
-	Point xyPosition;
+	Point position;
 	Point gridPosition;
 	Color color;
 	String name;

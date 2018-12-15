@@ -6,7 +6,7 @@
 Item::Item(Point pos)
 {
 	gridPosition = pos;
-	xyPosition = GridtoCenterXY(pos);
+	position = GridtoCenterXY(pos);
 	color = Palette::Palegreen;
 	name = L"Item";
 	used = false;
