@@ -8,7 +8,7 @@ void DungeonSystem::update()
 
 void DungeonSystem::draw()
 {
-	Println(MapData::getInstance().getCharacterArray(CharacterId::player).size());
+	//Println(MapData::getInstance().getCharacterArray(CharacterId::player).size());
 	if (!timer.isPaused())
 	{
 		if (timer.ms() > 2000)

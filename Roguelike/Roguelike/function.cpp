@@ -37,7 +37,7 @@ void rotateDirection(Direction & direction, int i)
 	direction = static_cast<Direction>(n);
 }
 
-Point getGrid(int i)
+Point DirectionToPoint(int i)
 {
 	Point re;
 	Direction d = Direction::Right;
@@ -69,6 +69,55 @@ Point getGrid(int i)
 		break;
 	default:
 		re.y = 1;
+	}
+	return re;
+}
+
+Direction PointToDirection(Point p)
+{
+	Direction re = Direction::Right;
+
+	if (p.x == 1)
+	{
+		switch (p.y)
+		{
+		case 1:
+			re = Direction::UpRight;
+			break;
+		case 0:
+			re = Direction::Right;
+			break;
+		case -1:
+			re = Direction::DownRight;
+			break;
+		}
+	}
+	else if (p.x == -1)
+	{
+		switch (p.y)
+		{
+		case 1:
+			re = Direction::UpLeft;
+			break;
+		case 0:
+			re = Direction::Left;
+			break;
+		case -1:
+			re = Direction::DownLeft;
+			break;
+		}
+	}
+	else
+	{
+		switch (p.y)
+		{
+		case 1:
+			re = Direction::Up;
+			break;
+		case -1:
+			re = Direction::Down;
+			break;
+		}
 	}
 	return re;
 }

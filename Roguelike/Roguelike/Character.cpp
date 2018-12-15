@@ -136,17 +136,7 @@ void Player::move()
 		MapData::getInstance().setCenterPoint(position);
 	}
 
-	bool keyInput = true;
-	if (Input::KeyUp.clicked || Gamepad(0).povForward.clicked)
-		direction = Direction::Up;
-	else if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
-		direction = Direction::Down;
-	else if (Input::KeyLeft.clicked || Gamepad(0).povLeft.clicked)
-		direction = Direction::Left;
-	else if (Input::KeyRight.clicked || Gamepad(0).povRight.clicked)
-		direction = Direction::Right;
-	else
-		keyInput = false;
+	bool keyInput = KeyInputToDirection(direction);
 
 	if ( (Input::KeyShift.pressed || Gamepad(0).button(0).pressed) || !keyInput)
 		return;
@@ -207,6 +197,29 @@ void Player::useItem()
 
 	if (MenuSystem::getInstance().update())
 		AS = ActionStatus::EndAction;
+}
+
+bool Player::KeyInputToDirection(Direction& d)
+{
+	Point re = Point::Zero;
+
+	if (Input::KeyW.pressed || Gamepad(0).povForward.clicked)
+		re.y = 1;
+	else if (Input::KeyS.pressed || Gamepad(0).povBackward.clicked)
+		re.y = -1;
+
+	if (Input::KeyA.pressed || Gamepad(0).povLeft.clicked)
+		re.x = -1;
+	else if (Input::KeyD.pressed || Gamepad(0).povRight.clicked)
+		re.x = 1;
+
+	if (re.isZero())
+		return false;
+	else
+	{
+		d = PointToDirection(re);
+		return true;
+	}
 }
 
 void Frankenstein::move()
@@ -311,7 +324,7 @@ void Ghost::attack()
 {
 	for (int i = 0; i < 8; i++)
 	{
-		const Point frontOfMe = position + getGrid(static_cast<Direction>(i));
+		const Point frontOfMe = XYtoGrid(xyPosition) + getGrid(static_cast<Direction>(i));
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
 			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getId() == CharacterId::player)

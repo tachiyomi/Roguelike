@@ -311,6 +311,8 @@ public:
 	void attack()override;
 	void openInventory();
 	void useItem();
+
+	bool KeyInputToDirection(Direction&);
 };
 //エネミー
 class Enemy :public Character
