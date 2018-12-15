@@ -135,23 +135,13 @@ void Player::move()
 		MapData::getInstance().setCenterPoint(XYtoGrid(xyPosition));
 	}
 
-	bool keyInput = true;
-	if (Input::KeyUp.clicked || Gamepad(0).povForward.clicked)
-		direction = Direction::Up;
-	else if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
-		direction = Direction::Down;
-	else if (Input::KeyLeft.clicked || Gamepad(0).povLeft.clicked)
-		direction = Direction::Left;
-	else if (Input::KeyRight.clicked || Gamepad(0).povRight.clicked)
-		direction = Direction::Right;
-	else
-		keyInput = false;
+	bool keyInput = KeyInputToDirection(direction);
 
 	if ( (Input::KeyShift.pressed || Gamepad(0).button(0).pressed) || !keyInput)
 		return;
 
-	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction)).enableAddCharacter())
-		xyPosition += GridtoXY(getGrid(direction));
+	if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + DirectionToPoint(direction)).enableAddCharacter())
+		xyPosition += GridtoXY(DirectionToPoint(direction));
 
 	if (XYtoGrid(xyPosition) != formerGrid)
 	{
@@ -179,7 +169,7 @@ void Player::attack()
 	if (!(Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
 		return;
 
-	const Point frontOfMe = XYtoGrid(xyPosition) + getGrid(direction);
+	const Point frontOfMe = XYtoGrid(xyPosition) + DirectionToPoint(direction);
 	if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 	{
 		MapData::getInstance().fight(shared_from_this(), MapData::getInstance().getOneGridData(frontOfMe).getCharacter());
@@ -208,6 +198,29 @@ void Player::useItem()
 		AS = ActionStatus::EndAction;
 }
 
+bool Player::KeyInputToDirection(Direction& d)
+{
+	Point re = Point::Zero;
+
+	if (Input::KeyW.pressed || Gamepad(0).povForward.clicked)
+		re.y = 1;
+	else if (Input::KeyS.pressed || Gamepad(0).povBackward.clicked)
+		re.y = -1;
+
+	if (Input::KeyA.pressed || Gamepad(0).povLeft.clicked)
+		re.x = -1;
+	else if (Input::KeyD.pressed || Gamepad(0).povRight.clicked)
+		re.x = 1;
+
+	if (re.isZero())
+		return false;
+	else
+	{
+		d = PointToDirection(re);
+		return true;
+	}
+}
+
 void Frankenstein::move()
 {
 	if (AS != ActionStatus::WaitKeyInput)
@@ -219,9 +232,9 @@ void Frankenstein::move()
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + i)).enableAddCharacter())
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + DirectionToPoint(direction + i)).enableAddCharacter())
 			{
-				xyPosition += GridtoXY(getGrid(direction + i));
+				xyPosition += GridtoXY(DirectionToPoint(direction + i));
 				rotateDirection(direction, i);
 				break;
 			}
@@ -232,9 +245,9 @@ void Frankenstein::move()
 		for (int i = 0; i < 3; i++)
 		{
 			int ran = (int)(Random() * 8);
-			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + ran)).enableAddCharacter())
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + DirectionToPoint(direction + ran)).enableAddCharacter())
 			{
-				xyPosition += GridtoXY(getGrid(direction + ran));
+				xyPosition += GridtoXY(DirectionToPoint(direction + ran));
 				rotateDirection(direction, ran);
 				break;
 			}
@@ -252,7 +265,7 @@ void Frankenstein::attack()
 {
 	for (int i = 0; i < 8; i++)
 	{
-		const Point frontOfMe = XYtoGrid(xyPosition) + getGrid(i);
+		const Point frontOfMe = XYtoGrid(xyPosition) + DirectionToPoint(i);
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
 			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getId() == CharacterId::player)
@@ -277,9 +290,9 @@ void Ghost::move()
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + i)).enableAddCharacter())
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + DirectionToPoint(direction + i)).enableAddCharacter())
 			{
-				xyPosition += GridtoXY(getGrid(direction + i));
+				xyPosition += GridtoXY(DirectionToPoint(direction + i));
 				rotateDirection(direction, i);
 				break;
 			}
@@ -290,9 +303,9 @@ void Ghost::move()
 		for (int i = 0; i < 3; i++)
 		{
 			int ran = (int)(Random() * 8);
-			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + getGrid(direction + ran)).enableAddCharacter())
+			if (MapData::getInstance().getOneGridData(XYtoGrid(xyPosition) + DirectionToPoint(direction + ran)).enableAddCharacter())
 			{
-				xyPosition += GridtoXY(getGrid(direction + ran));
+				xyPosition += GridtoXY(DirectionToPoint(direction + ran));
 				rotateDirection(direction, ran);
 				break;
 			}
@@ -310,7 +323,7 @@ void Ghost::attack()
 {
 	for (int i = 0; i < 8; i++)
 	{
-		const Point frontOfMe = XYtoGrid(xyPosition) + getGrid(static_cast<Direction>(i));
+		const Point frontOfMe = XYtoGrid(xyPosition) + DirectionToPoint(static_cast<Direction>(i));
 		if (MapData::getInstance().getOneGridData(frontOfMe).isUnderCharacter())
 		{
 			if (MapData::getInstance().getOneGridData(frontOfMe).getCharacter()->getId() == CharacterId::player)
