@@ -32,8 +32,8 @@ public:
 
 	virtual void use() { used = true; }
 
-	void setGridPosition(Point p) { gridPosition = p; }
-	Point getGridPosition() { return gridPosition; }
+	void setGridPosition(Point p) { position = p; }
+	Point getGridPosition() { return position; }
 	String getName() { return name; }
 	ItemType getType() { return type; }
 
@@ -65,7 +65,7 @@ protected:
 	int id = ItemId::item;
 	Texture img;
 	Point position;
-	Point gridPosition;
+	Vec2 offsetPosiiton;
 	Color color;
 	String name;
 	bool used;

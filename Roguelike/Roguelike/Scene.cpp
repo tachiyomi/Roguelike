@@ -11,7 +11,6 @@ void Title::update()
 	if (Input::AnyKeyReleased())
 	{
 		this->changeScene(2, 2000);
-		DungeonSystem::getInstance().startAtFirstFloor();
 	}
 }
 
@@ -56,6 +55,8 @@ void DisplayFloor::draw() const
 
 void Play::init()
 {
+	DungeonSystem::getInstance().startAtFirstFloor();
+
 	conti = L"ゲームを続ける";
 	exit = L"タイトルに戻る";
 	flag = true;
@@ -101,6 +102,7 @@ void Play::update()
 
 	DungeonSystem::getInstance().update();
 
+	/*
 	if (DungeonSystem::getInstance().gameClear())
 	{
 		changeScene(4, 3000);
@@ -117,6 +119,7 @@ void Play::update()
 		changeScene(2, 2000);
 		m_data->floorNum = DungeonSystem::getInstance().getFloorNumber();
 	}
+	*/
 }
 
 void Play::draw() const

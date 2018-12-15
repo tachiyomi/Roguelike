@@ -1,35 +1,35 @@
 #include "function.h"
 #include "MapData.h"
 
-Point GridtoXY(Point p)
+Point GridToXY(Point p)
 {
 	return Point(p.x*MapData::getInstance().getMainGridSize().x, p.y*MapData::getInstance().getMainGridSize().y);
 }
-Point GridtoCenterXY(Point p)
+Point GridToCenterXY(Point p)
 {
 	return Point(p.x*MapData::getInstance().getMainGridSize().x + MapData::getInstance().getMainGridSize().x / 2, p.y*MapData::getInstance().getMainGridSize().y + MapData::getInstance().getMainGridSize().y / 2);
 }
-Point XYtoGrid(Point p)
+Point XYToGrid(Point p)
 {
 	return Point((int)(p.x / MapData::getInstance().getMainGridSize().x), (int)(p.y / MapData::getInstance().getMainGridSize().y));
 }
-Point GridtoXY(int x, int y)
+Point GridToXY(int x, int y)
 {
 	return Point(x*MapData::getInstance().getMainGridSize().x, y*MapData::getInstance().getMainGridSize().y);
 }
-Point SubGridtoXY(int x, int y)
+Point SubGridToXY(int x, int y)
 {
 	return Point(x*MapData::getInstance().getSubGridSize().x, y*MapData::getInstance().getSubGridSize().y);
 }
-Point GridtoCenterXY(int x, int y)
+Point GridToCenterXY(int x, int y)
 {
 	return Point(x*MapData::getInstance().getMainGridSize().x + MapData::getInstance().getMainGridSize().x / 2, y*MapData::getInstance().getMainGridSize().y + MapData::getInstance().getMainGridSize().y / 2);
 }
-Point XYtoGrid(int x, int y)
+Point XYToGrid(int x, int y)
 {
 	return Point((int)(x / MapData::getInstance().getMainGridSize().x), (int)(y / MapData::getInstance().getMainGridSize().y));
 }
-Point getMouseGrid() { return XYtoGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2; }
+Point getMouseGrid() { return XYToGrid(Mouse::Pos()) + MapData::getInstance().getCenterPoint() - MapData::getInstance().getDrawRange() / 2; }
 
 void rotateDirection(Direction & direction, int i)
 {
@@ -122,7 +122,7 @@ Direction PointToDirection(Point p)
 	return re;
 }
 
-double ToRadian(int i)
+double DirectionToRadian(int i)
 {
 	i += 8;
 	return Radians(360 * (1 - i / 8.0));

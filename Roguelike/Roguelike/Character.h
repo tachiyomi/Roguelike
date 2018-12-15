@@ -1,8 +1,8 @@
 #pragma once
-#include "Item.h"
-#include "Ability.h"
 #include <Siv3D.hpp>
 #include <memory>
+#include "Item.h"
+#include "Ability.h"
 #include "LogSystem.h"
 #include "function.h"
 
@@ -286,7 +286,7 @@ public:
 	int getId() { return id; }
 protected:
 	int id = CharacterId::character;
-	Texture img;
+	Texture img, arrow;
 	Point position;
 	Vec2 offsetPosition;
 	Color color;

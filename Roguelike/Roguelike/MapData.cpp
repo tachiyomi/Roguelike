@@ -170,7 +170,7 @@ void MapData::drawMainArea()
 		{
 			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
-			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
+			drawOneGridGround(GridToXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
 
 			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
 			{
@@ -178,19 +178,23 @@ void MapData::drawMainArea()
 					k = 10;
 				else
 					k = 20;
-				//if (getOneGridData(x, y).getCharacter()->getStatus() == ActionStatus::EndAction)
-				//	k = 60;
 			}
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 30;
-			drawOneGridGround(GridtoXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
-
-			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
-				getOneGridData(x, y).getItem()->draw();
-			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
-				getOneGridData(x, y).getCharacter()->draw();
+			drawOneGridGround(GridToXY(x - startingPos.x, y - startingPos.y), mainGridSize, k);
 		}
 	}
+
+
+	for (int y = startingPos.y; y < endPos.y; y++)
+		for (int x = startingPos.x; x < endPos.x; x++)
+			if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
+				getOneGridData(x, y).getItem()->draw();
+
+	for (int y = startingPos.y; y < endPos.y; y++)
+		for (int x = startingPos.x; x < endPos.x; x++)
+			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
+				getOneGridData(x, y).getCharacter()->draw();
 
 	if (MenuSystem::getInstance().isOpening())
 	{
@@ -212,7 +216,7 @@ void MapData::drawSubMap()
 			int k = MapData::getInstance().getOneGridData(x, y).getTerrain();
 			if (k == 0)k = 400;
 			MapData::getInstance().getOneGridData(x, y).setEnableDraw(true);
-			drawOneGridGround(SubGridtoXY(x, y), subGridSize, k);
+			drawOneGridGround(SubGridToXY(x, y), subGridSize, k);
 
 			if (MapData::getInstance().getOneGridData(x, y).isUnderCharacter())
 			{
@@ -223,7 +227,7 @@ void MapData::drawSubMap()
 			}
 			else if (MapData::getInstance().getOneGridData(x, y).isUnderItem())
 				k = 300;
-			drawOneGridGround(SubGridtoXY(x, y), subGridSize, k);
+			drawOneGridGround(SubGridToXY(x, y), subGridSize, k);
 		}
 	}
 }

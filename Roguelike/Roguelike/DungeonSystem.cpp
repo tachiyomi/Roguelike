@@ -8,13 +8,14 @@ void DungeonSystem::update()
 
 void DungeonSystem::draw()
 {
-	//Println(MapData::getInstance().getCharacterArray(CharacterId::player).size());
+	/*
 	if (!timer.isPaused())
 	{
 		if (timer.ms() > 2000)
 			timer.pause();
 		return;
 	}
+	*/
 	if (MapData::getInstance().getCharacterArray(CharacterId::player).size() != 0)
 	{
 		const int hp = MapData::getInstance().getCharacterArray(CharacterId::player)[0]->getHP();

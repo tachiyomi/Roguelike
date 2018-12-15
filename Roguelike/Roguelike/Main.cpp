@@ -21,7 +21,7 @@ void Main()
 	manager.add<GameClear>(4);
 	manager.add<GameOver>(5);
 
-	manager.init(0);
+	manager.init(3);
 
 	FontAsset::Register(L"statusFont", int(MapData::getInstance().getMainGridSize().x / 8.0), Typeface::Heavy);
 	FontAsset::Register(L"menuFont", 13, Typeface::Medium);

@@ -1,12 +1,13 @@
 #include "Item.h"
 #include "MapData.h"
 #include "DungeonSystem.h"
+#include "function.h"
 
 //アイテム
 Item::Item(Point pos)
 {
-	gridPosition = pos;
-	position = GridtoCenterXY(pos);
+	position = pos;
+	offsetPosiiton = Vec2::Zero;
 	color = Palette::Palegreen;
 	name = L"Item";
 	used = false;
@@ -16,8 +17,9 @@ Item::Item(Point pos)
 Item::Item(int x, int y) :Item(Point(x, y)) {}
 void Item::draw()
 {
-	if (MapData::getInstance().getOneGridData(gridPosition).canBeDraw() && !inInventory)
-		Rect(GridtoXY(gridPosition - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw();// .drawFrame(1, 0, color);
+	if (MapData::getInstance().getOneGridData(position).canBeDraw() && !inInventory)
+		FontAsset(L"statusFont")(name).draw(GridToXY(position - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), Palette::Black);
+		//Rect(GridtoXY(position - MapData::getInstance().getCenterPoint() + MapData::getInstance().getDrawRange() / 2), MapData::getInstance().getMainGridSize())(img).draw();// .drawFrame(1, 0, color);
 }
 void Item::doSomethingAtRemoval()
 {
@@ -69,7 +71,7 @@ std::vector<String> Microphone::selectSong(std::vector<size_t> ints)
 }
 void Microphone::song(size_t i)
 {
-	std::shared_ptr<Character> character = MapData::getInstance().getOneGridData(gridPosition).getCharacter();
+	std::shared_ptr<Character> character = MapData::getInstance().getOneGridData(position).getCharacter();
 	switch (i)
 	{
 		case 0:
@@ -99,8 +101,8 @@ std::vector<String> Equipment::getChoice(std::vector<size_t> ints)
 	{
 		if (!isEquipped)
 		{
-			if (MapData::getInstance().getOneGridData(gridPosition).getCharacter()->isEquipping(type))
-				re = std::vector<String>{ MapData::getInstance().getOneGridData(gridPosition).getCharacter()->getEquipmentPointer(type)->getName().remove(L"[装備中]") + L"から装備変更する" };
+			if (MapData::getInstance().getOneGridData(position).getCharacter()->isEquipping(type))
+				re = std::vector<String>{ MapData::getInstance().getOneGridData(position).getCharacter()->getEquipmentPointer(type)->getName().remove(L"[装備中]") + L"から装備変更する" };
 			else
 				re = std::vector<String>{ L"装備する" };
 		}
@@ -122,7 +124,7 @@ std::vector<String> Equipment::getChoice(std::vector<size_t> ints)
 
 void Equipment::equipped()
 {
-	MapData::getInstance().getOneGridData(gridPosition).getCharacter()->equipped(shared_from_this());
+	MapData::getInstance().getOneGridData(position).getCharacter()->equipped(shared_from_this());
 	isEquipped = true;
 	LogSystem::getInstance().addLog(name + L"を装備した。");
 	name.append(L"[装備中]");
@@ -130,7 +132,7 @@ void Equipment::equipped()
 
 void Equipment::takeout()
 {
-	MapData::getInstance().getOneGridData(gridPosition).getCharacter()->takeout(shared_from_this());
+	MapData::getInstance().getOneGridData(position).getCharacter()->takeout(shared_from_this());
 	isEquipped = false;
 	name = name.remove(L"[装備中]");
 	LogSystem::getInstance().addLog(name + L"を装備解除した。");
