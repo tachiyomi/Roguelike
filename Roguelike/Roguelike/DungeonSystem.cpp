@@ -32,6 +32,12 @@ void DungeonSystem::draw()
 	LogSystem::getInstance().displayLog();
 }
 
+bool DungeonSystem::selectStage(String s)
+{
+	stageName = s;
+	return true;
+}
+
 void DungeonSystem::startAtFirstFloor()
 {
 	MapData::getInstance().reset();
@@ -44,8 +50,8 @@ void DungeonSystem::startAtFirstFloor()
 	LogSystem::getInstance().addLog(L"--操作方法--");
 	*/
 	floorNumber = 1;
-	LogSystem::getInstance().addLog(L"地下" + ToString(6 - floorNumber) + L"階にたどり着いた。");
-	MapData::getInstance().loadMap(floorNumber);
+	LogSystem::getInstance().addLog(floorNumber + L"階にたどり着いた。");
+	MapData::getInstance().loadMap(stageName, floorNumber);
 	timer.restart();
 	totaltimer.restart();
 }
@@ -54,8 +60,8 @@ void DungeonSystem::shiftNextFloor()
 {
 	MapData::getInstance().deleteExceptPlayer();
 	floorNumber++;
-	LogSystem::getInstance().addLog(L"地下" + ToString(6 - floorNumber) + L"階にたどり着いた。");
-	MapData::getInstance().loadMap(floorNumber);
+	LogSystem::getInstance().addLog(floorNumber + L"階にたどり着いた。");
+	MapData::getInstance().loadMap(stageName, floorNumber);
 	timer.restart();
 }
 

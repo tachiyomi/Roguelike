@@ -65,7 +65,7 @@ public:
 	void deleteObject();
 	void deleteExceptPlayer();
 
-	void loadMap(int);
+	void loadMap(String, int);
 	void setupOneGrid(GridData&, String, Point);
 	void drawOneGridGround(Point, Size, int);
 

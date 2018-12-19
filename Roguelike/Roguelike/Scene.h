@@ -22,6 +22,10 @@ class Select :public SceneManager<int, CommonData>::Scene
 	void init()override;
 	void update()override;
 	void draw()const override;
+
+private:
+	Array<String, String> dungeonList;
+	int selectNumber;
 };
 
 class DisplayFloor :public SceneManager<int, CommonData>::Scene
