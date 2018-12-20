@@ -13,6 +13,7 @@ public:
 	void update();
 	void draw();
 
+	bool selectStage(String);
 	void startAtFirstFloor();
 	void shiftNextFloor();
 
@@ -32,6 +33,7 @@ private:
 	void operator = (const DungeonSystem&) {}
 	DungeonSystem(const DungeonSystem&) {}
 
+	String stageName;
 	int floorNumber;
 	Stopwatch timer, totaltimer;
 };

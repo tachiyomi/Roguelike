@@ -24,9 +24,9 @@ MapData::MapData()
 
 	updateTimer.set(0s);
 }
-void MapData::loadMap(int i)
+void MapData::loadMap(String stageName, int i)
 {
-	const CSVReader reader(L"/" + ToString(4000 + i - 1));
+	const CSVReader reader(L"Dungeon/" + stageName + L"/data" + ToString(i) + L".csv");
 
 	if (!reader)
 		return;

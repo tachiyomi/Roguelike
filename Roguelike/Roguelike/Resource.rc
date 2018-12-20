@@ -61,8 +61,10 @@
 2000		FILE	"Images/stairs.png"
 3000		FILE	"Images/title.png"
 
+/*
 4000		FILE	"Csvs/data1.csv"
 4001		FILE	"Csvs/data2.csv"
 4002		FILE	"Csvs/data3.csv"
 4003		FILE	"Csvs/data4.csv"
 4004		FILE	"Csvs/data5.csv"
+*/

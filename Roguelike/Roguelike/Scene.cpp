@@ -22,14 +22,29 @@ void Title::draw() const
 
 void Select::init()
 {
-	DungeonSystem::getInstance().startAtFirstFloor();
+
+	const CSVReader reader(L"Dungeon/dungeonList");
+
+	if (!reader)
+		return;
+
+	
+	const size_t row = reader.rows;
+
+	for (size_t y = 0; y < row; y++)
+	{
+		dungeonList.emplace_back(reader.getOr<String>(y, 0, L""), reader.getOr<String>(y, 1, L""));
+	}
+
+	selectNumber = 0;
 }
 
 void Select::update()
 {
 	if (Input::AnyKeyReleased())
 	{
-		this->changeScene(2, 2000);
+		DungeonSystem::getInstance().selectStage(dungeonList[0][1]);
+		this->changeScene(3, 1000);
 	}
 }
 
@@ -55,6 +70,7 @@ void DisplayFloor::draw() const
 
 void Play::init()
 {
+	DungeonSystem::getInstance().selectStage(L"TestDungeon");
 	DungeonSystem::getInstance().startAtFirstFloor();
 
 	conti = L"ÉQÅ[ÉÄÇë±ÇØÇÈ";
