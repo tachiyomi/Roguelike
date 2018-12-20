@@ -7,6 +7,7 @@
 #include "MapData.h"
 #include "Character.h"
 #include "DungeonSystem.h"
+#include "KeyInputManager.h"
 
 void Main()
 {
@@ -31,6 +32,7 @@ void Main()
 
 	while (System::Update())
 	{
+		KeyInputManager::getInstance().renew();
 		manager.updateAndDraw();
 	}
 }

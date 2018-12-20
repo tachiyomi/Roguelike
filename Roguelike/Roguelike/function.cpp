@@ -127,4 +127,3 @@ double DirectionToRadian(int i)
 	i += 8;
 	return Radians(360 * (1 - i / 8.0));
 }
-

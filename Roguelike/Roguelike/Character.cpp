@@ -2,6 +2,7 @@
 #include "MapData.h"
 #include "MenuSystem.h"
 #include "DungeonSystem.h"
+#include "KeyInputManager.h"
 
 //キャラクター
 Character::Character(Point pos) 
@@ -139,6 +140,8 @@ void Player::move()
 
 	bool keyInput = KeyInputToDirection(direction);
 
+	//Println(KeyInputToDirection(direction));
+
 	if ( (Input::KeyShift.pressed || Gamepad(0).button(0).pressed) || !keyInput)
 		return;
 
@@ -204,14 +207,14 @@ bool Player::KeyInputToDirection(Direction& d)
 {
 	Point re = Point::Zero;
 
-	if (Input::KeyW.pressed || Gamepad(0).povForward.clicked)
+	if (KeyInputManager::getInstance().KeyUp)
 		re.y = 1;
-	else if (Input::KeyS.pressed || Gamepad(0).povBackward.clicked)
+	else if (KeyInputManager::getInstance().KeyDown)
 		re.y = -1;
 
-	if (Input::KeyA.pressed || Gamepad(0).povLeft.clicked)
+	if(KeyInputManager::getInstance().KeyLeft)
 		re.x = -1;
-	else if (Input::KeyD.pressed || Gamepad(0).povRight.clicked)
+	else if (KeyInputManager::getInstance().KeyRight)
 		re.x = 1;
 
 	if (re.isZero())

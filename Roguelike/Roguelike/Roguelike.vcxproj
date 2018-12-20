@@ -166,6 +166,7 @@
     <ClCompile Include="DungeonSystem.cpp" />
     <ClCompile Include="function.cpp" />
     <ClCompile Include="Item.cpp" />
+    <ClCompile Include="KeyInputManager.cpp" />
     <ClCompile Include="LogSystem.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MapData.cpp" />
@@ -290,6 +291,7 @@
     <ClInclude Include="DungeonSystem.h" />
     <ClInclude Include="function.h" />
     <ClInclude Include="Item.h" />
+    <ClInclude Include="KeyInputManager.h" />
     <ClInclude Include="LogSystem.h" />
     <ClInclude Include="MapData.h" />
     <ClInclude Include="MenuSystem.h" />
