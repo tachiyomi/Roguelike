@@ -12,7 +12,7 @@ public:
 
 	void renew();
 
-	bool KeyUp, KeyDown, KeyRight, KeyLeft;
+	bool KeyUp, KeyDown, KeyRight, KeyLeft, KeyLeaningOnly, KeyNoAttack;
 	bool KeyDesition, KeyBack, KeyMenu, KeyPause;
 
 protected:

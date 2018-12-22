@@ -31,11 +31,11 @@ bool MenuSystem::update()
 
 	if ((int)playingCharacter->getChoice(selectChoiceNumber).size() > 0)
 	{
-		if (Input::KeyDown.clicked || Gamepad(0).povBackward.clicked)
+		if (KeyInputManager::getInstance().KeyDown)
 			selectChoiceNumber.back() = (selectChoiceNumber.back() + 1) % (int)playingCharacter->getChoice(selectChoiceNumber).size();
-		if (Input::KeyUp.clicked || Gamepad(0).povForward.clicked)
+		if (KeyInputManager::getInstance().KeyUp)
 			selectChoiceNumber.back() = (selectChoiceNumber.back() + (int)playingCharacter->getChoice(selectChoiceNumber).size() - 1) % (int)playingCharacter->getChoice(selectChoiceNumber).size();
-		if ((Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
+		if (KeyInputManager::getInstance().KeyDesition)
 		{
 			selectChoiceNumber.emplace_back(0);
 			std::vector<s3d::String> exit = playingCharacter->getChoice(selectChoiceNumber);
@@ -50,7 +50,7 @@ bool MenuSystem::update()
 				return false;
 			}
 		}
-		if ((Input::KeyBackspace.clicked || Gamepad(0).button(0).clicked) && selectChoiceNumber.size() > 1)
+		if (KeyInputManager::getInstance().KeyBack && selectChoiceNumber.size() > 1)
 			selectChoiceNumber.pop_back();
 	}
 	return false;

@@ -17,12 +17,12 @@ void Main()
 	SceneManager<int,CommonData> manager;
 	manager.add<Title>(0);
 	manager.add<Select>(1);
-	manager.add<DisplayFloor>(2);
+	//manager.add<DisplayFloor>(2);
 	manager.add<Play>(3);
 	manager.add<GameClear>(4);
 	manager.add<GameOver>(5);
 
-	manager.init(3);
+	manager.init(1);
 
 	FontAsset::Register(L"statusFont", int(MapData::getInstance().getMainGridSize().x / 8.0), Typeface::Heavy);
 	FontAsset::Register(L"menuFont", 13, Typeface::Medium);

@@ -2,6 +2,7 @@
 #include <Siv3D.hpp>
 #include "Character.h"
 #include "Item.h"
+#include "KeyInputManager.h"
 
 class MenuSystem
 {

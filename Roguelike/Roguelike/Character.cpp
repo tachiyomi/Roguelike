@@ -140,9 +140,7 @@ void Player::move()
 
 	bool keyInput = KeyInputToDirection(direction);
 
-	//Println(KeyInputToDirection(direction));
-
-	if ( (Input::KeyShift.pressed || Gamepad(0).button(0).pressed) || !keyInput)
+	if (KeyInputManager::getInstance().KeyNoAttack || !keyInput)
 		return;
 
 	if (MapData::getInstance().getOneGridData(position + DirectionToPoint(direction)).enableAddCharacter())
@@ -171,7 +169,7 @@ void Player::attack()
 	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
-	if (!(Input::KeyEnter.clicked || Gamepad(0).button(1).clicked))
+	if (!KeyInputManager::getInstance().KeyDesition)
 		return;
 
 	const Point frontOfMe = position + DirectionToPoint(direction);
@@ -186,7 +184,7 @@ void Player::openInventory()
 	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
-	if (Input::KeyI.clicked || Gamepad(0).button(7).clicked)
+	if (KeyInputManager::getInstance().KeyMenu)
 	{
 		MenuSystem::getInstance().openMenu(shared_from_this());
 	}
@@ -196,7 +194,7 @@ void Player::useItem()
 	if (AS != ActionStatus::WaitKeyInput)
 		return;
 
-	if (Input::KeyI.clicked || Gamepad(0).button(7).clicked)
+	if (KeyInputManager::getInstance().KeyMenu)
 		MenuSystem::getInstance().closeMenu();
 
 	if (MenuSystem::getInstance().update())
@@ -221,7 +219,10 @@ bool Player::KeyInputToDirection(Direction& d)
 		return false;
 	else
 	{
-		d = PointToDirection(re);
+		if (KeyInputManager::getInstance().KeyLeaningOnly && PointToDirection(re) % 2 == 0)
+			return false;
+		else
+			d = PointToDirection(re);
 		return true;
 	}
 }

@@ -10,7 +10,7 @@ void Title::update()
 {
 	if (Input::AnyKeyReleased())
 	{
-		this->changeScene(2, 2000);
+		this->changeScene(1, 1000);
 	}
 }
 
@@ -22,13 +22,11 @@ void Title::draw() const
 
 void Select::init()
 {
-
-	const CSVReader reader(L"Dungeon/dungeonList");
+	const CSVReader reader(L"Dungeon/dungeonList.csv");
 
 	if (!reader)
 		return;
 
-	
 	const size_t row = reader.rows;
 
 	for (size_t y = 0; y < row; y++)
@@ -41,18 +39,26 @@ void Select::init()
 
 void Select::update()
 {
-	if (Input::AnyKeyReleased())
+	if (KeyInputManager::getInstance().KeyUp)
+		selectNumber++;
+	else if (KeyInputManager::getInstance().KeyDown)
+		selectNumber--;
+
+	selectNumber = (selectNumber + dungeonList.size()) % dungeonList.size();
+
+	if (KeyInputManager::getInstance().KeyDesition)
 	{
-		DungeonSystem::getInstance().selectStage(dungeonList[0][1]);
+		DungeonSystem::getInstance().selectStage(dungeonList[selectNumber].url);
 		this->changeScene(3, 1000);
 	}
 }
 
 void Select::draw() const
 {
-	FontAsset(L"PauseFont")(L"新しくゲームを始める").drawAt(Window::Center(), Palette::White);
+	FontAsset(L"PauseFont")(dungeonList[selectNumber].name).drawAt(Window::Center(), Palette::White);
 }
 
+/*
 void DisplayFloor::init()
 {
 	m_data->floorNum = DungeonSystem::getInstance().getFloorNumber();
@@ -67,10 +73,11 @@ void DisplayFloor::draw() const
 {
 	//FontAsset(L"PauseFont")(L"邪悪な墓　B" + ToString(6 - m_data->floorNum) + L"F").drawAt(Window::Center(), Palette::White);
 }
+*/
 
 void Play::init()
 {
-	DungeonSystem::getInstance().selectStage(L"TestDungeon");
+	//DungeonSystem::getInstance().selectStage(L"TestDungeon");
 	DungeonSystem::getInstance().startAtFirstFloor();
 
 	conti = L"ゲームを続ける";
@@ -82,7 +89,7 @@ void Play::init()
 
 void Play::update()
 {
-	if (Input::KeyP.clicked)
+	if (KeyInputManager::getInstance().KeyPause)
 	{
 		paused = !paused;
 		if (paused)
@@ -101,9 +108,9 @@ void Play::update()
 			Image img = ScreenCapture::GetFrame();
 			screenShot = Texture(img.gaussianBlurred(10, 10).brightened(-20));
 		}
-		if (Input::KeyUp.clicked || Input::KeyDown.clicked)
+		if (KeyInputManager::getInstance().KeyDown || KeyInputManager::getInstance().KeyUp)
 			flag = !flag;
-		else if (Input::KeyEnter.clicked)
+		else if (KeyInputManager::getInstance().KeyDesition)
 		{
 			if (flag)
 			{

@@ -1,6 +1,18 @@
 #pragma once
 #include <Siv3D.hpp>
 #include <HamFramework.hpp>
+#include"KeyInputManager.h" 
+
+struct DungeonData
+{
+	DungeonData(String n,String u)
+	{
+		name = n;
+		url = u;
+	}
+
+	String name, url;
+};
 
 struct CommonData
 {
@@ -24,16 +36,18 @@ class Select :public SceneManager<int, CommonData>::Scene
 	void draw()const override;
 
 private:
-	Array<String, String> dungeonList;
+	std::vector<DungeonData> dungeonList;
 	int selectNumber;
 };
 
+/*
 class DisplayFloor :public SceneManager<int, CommonData>::Scene
 {
 	void init()override;
 	void update()override;
 	void draw()const override;
 };
+*/ 
 
 class Play :public SceneManager<int, CommonData>::Scene
 {
